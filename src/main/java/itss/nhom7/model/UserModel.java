@@ -9,21 +9,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class CustomerInfo {
+public class UserModel {
 	 
-    private String name;
+    private String userName;
+    private String fullName;
+    private String avataUrl;
     private String address;
     private String email;
     private String phone;
+   
  
-    private boolean valid;
+    private boolean active;
  
  
-    public CustomerInfo(CustomerForm customerForm) {
-        this.name = customerForm.getName();
+    public UserModel(CustomerForm customerForm) {
+        this.fullName = customerForm.getFullName();
         this.address = customerForm.getAddress();
         this.email = customerForm.getEmail();
         this.phone = customerForm.getPhone();
-        this.valid = customerForm.isValid();
+        this.active = customerForm.isActive();
     }
 }

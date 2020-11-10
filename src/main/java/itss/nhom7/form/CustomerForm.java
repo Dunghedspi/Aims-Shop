@@ -1,6 +1,6 @@
 package itss.nhom7.form;
 
-import itss.nhom7.model.CustomerInfo;
+import itss.nhom7.model.UserModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,18 +10,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CustomerForm {
 	 
-    private String name;
+    private String userName;
+    private String fullName;
     private String address;
     private String email;
     private String phone;
  
-    private boolean valid;
+    private boolean active;
  
    
  
-    public CustomerForm(CustomerInfo customerInfo) {
+    public CustomerForm(UserModel customerInfo) {
         if (customerInfo != null) {
-            this.name = customerInfo.getName();
+            this.fullName = customerInfo.getFullName();
             this.address = customerInfo.getAddress();
             this.email = customerInfo.getEmail();
             this.phone = customerInfo.getPhone();
