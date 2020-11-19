@@ -41,7 +41,6 @@ public class UserService implements IUserService, UserDetailsService {
 			return false;
 
 		} else {
-			System.out.println(userfind.getUserName());
 
 			if (user.getPassword().equals(userfind.getPassword())) {
 				return true;

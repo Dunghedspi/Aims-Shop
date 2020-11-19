@@ -10,8 +10,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -19,13 +21,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.ToString.Exclude;
 
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="products")
+@Table(name="product")
 public class Product {
 	
 	@Id
@@ -35,32 +38,66 @@ public class Product {
 	@Column(name="name")
 	private String name;
 	
-	@Column(name="image_font")
-	private String imageFont;
-	
-	@Column(name="image_back")
-	private String imageBack;
-	
-	@Column(name="image_up")
-	private String imageUp;
-	
-	@Column(name="sex")
-	private String sex;
+	@Column(name="value")
+	private int value;
 	
 	@Column(name="price")
-	private String price;
+	private int price;
+	
+	@Column(name="author")
+	private String author;
+	
+	@Column(name="cover_type")
+	private String coverType;
+	
+	@Column(name="publisher")
+	private String publisher;
+	
+	@Column(name="publication_date")
+	private Date publicationDate;
+	
+	@Column(name="pages")
+	private int pages;
+	
+	@Column(name="language")
+	private String language;
+	
+	@Column(name="type")
+	private String type;
+	
+	@Column(name="artists")
+	private String artists;
+	
+	@Column(name="tracklist")
+	private String tracklist;
+
+	@Column(name="runtime")
+	private int runtime;
+
+	@Column(name="subtitles")
+	private String subtitles;
+
+	@Column(name="quantity")
+	private int quantity;
+	
+	@Column(name="description")
+	private String description;
+	
+	@Column(name="input_date")
+	private Date inputDate;
+	
+	@Column(name="weight")
+	private Double weight;
 	
 	@Column(name="size")
 	private Double size;
 	
-	@Column(name="bought")
-	private int bought;
 	
-	@Column(name="status")
-	private int status;
+	@Column(name="modified_by")
+	private String modifiedBy;
 	
-	@Column(name="created_at")
-	private Date createdAt;
+	@Column(name="modified_date")
+	private Date modifiedDate;
 	
 	@ManyToOne
 	@JoinColumn(name="category_id")
@@ -68,10 +105,26 @@ public class Product {
 	@ToString.Exclude
 	private Category category;
 	
+	@OneToOne
+	@JoinColumn(name="sale_id")
+	private Sale sale;
+	
 	@OneToMany(mappedBy = "product")
 	private List<OrderDetail> orderDetails = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "product")
 	private List<ProductPriceAudit> productPriceAudits = new ArrayList<>();
 
+	// mappedBy trỏ tới tên biến products ở trong Cart.
+    @ManyToMany(mappedBy = "products")
+    // LAZY để tránh việc truy xuất dữ liệu không cần thiết. Lúc nào cần thì mới query
+    @EqualsAndHashCode.Exclude
+    @Exclude
+    private List<Cart> carts = new ArrayList<>();
+    
+    @ManyToMany(mappedBy = "products")
+    // LAZY để tránh việc truy xuất dữ liệu không cần thiết. Lúc nào cần thì mới query
+    @EqualsAndHashCode.Exclude
+    @Exclude
+    private List<Order> orders = new ArrayList<>();
 }

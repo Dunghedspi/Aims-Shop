@@ -1,7 +1,6 @@
 package itss.nhom7.entities;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -31,11 +30,6 @@ public class Category {
 	@Column(name="name")
 	private String name;
 	
-	@Column(name="status")
-	private int status;
-	
-	@Column(name="created_at")
-	private Date createdAt;
 	
 	@OneToMany(mappedBy = "category")
 	private List<Product> products = new ArrayList<>();

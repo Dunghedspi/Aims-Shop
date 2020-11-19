@@ -1,12 +1,12 @@
 package itss.nhom7.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -17,9 +17,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="order_detail")
-public class OrderDetail {
-
+@Table(name="cart_detail")
+public class CartDetail implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,15 +32,10 @@ public class OrderDetail {
 	@Column(name="quantity")
 	private int quantity;
 	
-	@Column(name="price")
-	private int price;
+	@Column(name="product_id")
+	private int productId;
 	
-	
-	@ManyToOne
-	@JoinColumn(name="order_id")
-	private Order order;
-	
-	@ManyToOne
-	@JoinColumn(name="product_id")
-	private Product product;
+	@Column(name="cart_id")
+	private int cartId;
+
 }

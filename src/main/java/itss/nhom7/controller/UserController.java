@@ -41,10 +41,11 @@ public class UserController {
 //		System.out.println("123");
 //	}
 
-	@RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> login(@RequestBody User user) {
-
-		String result = "";
+	//@RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//public ResponseEntity<String> login(@RequestBody User user) {
+	@RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public ResponseEntity<String> login(User user) {	
+	String result = "";
 		HttpStatus httpStatus = null;
 		try {
 			System.out.println(2);
@@ -76,6 +77,7 @@ public class UserController {
 		return new ResponseEntity<String>(result, httpStatus);
 	}
 
+	//@PutMapping(value = "/applyNewPassword",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	@PutMapping(value = "/applyNewPassword")
 	public ResponseEntity<Object> applyNewPassword(@RequestBody User user) {
 

@@ -32,8 +32,8 @@ public class ProductPriceAudit {
 	@Column(name="price_before")
 	private int priceBefore;
 	
-	@Column(name="created_date")
-	private Date createdDate;
+	@Column(name="created_at")
+	private Date createdAt;
 
 	@ManyToOne
 	@JoinColumn(name="product_id")
