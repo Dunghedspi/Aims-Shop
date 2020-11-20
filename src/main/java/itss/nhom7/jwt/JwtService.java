@@ -1,9 +1,5 @@
 package itss.nhom7.jwt;
 
-import java.util.Date;
-
-import org.springframework.stereotype.Service;
-
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -12,6 +8,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 public class JwtService {

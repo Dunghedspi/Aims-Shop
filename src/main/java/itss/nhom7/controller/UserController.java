@@ -1,5 +1,6 @@
 package itss.nhom7.controller;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,11 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import itss.nhom7.entities.User;
 import itss.nhom7.jwt.JwtService;
@@ -22,6 +19,7 @@ import itss.nhom7.service.impl.UserService;
 
 @RestController
 @RequestMapping(value="/aims")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 	
 	@Autowired
@@ -39,28 +37,29 @@ public class UserController {
 //		System.out.println("123");
 //	}
 	
-	@RequestMapping(value = "/login", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
-	  public ResponseEntity<String> login( @RequestBody User user) {
-		
-		
+	@RequestMapping(value = "/login", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	  public ResponseEntity<String> login(User user, HttpServletResponse response, HttpServletRequest request) {
 	    String result = "";
 	    HttpStatus httpStatus = null;
 	    try {
-	    	System.out.println(2);
 	      if (userService.checkLogin(user)) {
-	        result = jwtService.generateTokenLogin( user.getUserName());
+	        result = jwtService.generateTokenLogin(user.getId());
 	        httpStatus = HttpStatus.OK;
-	      } else {
-	        result = "Wrong userId and password";
-	        httpStatus = HttpStatus.BAD_REQUEST;
-	      }
+	        Cookie jwt = new Cookie("Authorization",result);
+	        jwt.setHttpOnly(true);
+	        jwt.setPath("/");
+	        response.addCookie(jwt);
+		  } else {
+			  httpStatus = HttpStatus.BAD_REQUEST;
+		  }
 	    } catch (Exception ex) {
-	      result = "Server Error";
+			System.out.println(ex.getMessage());
 	      httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 	    }
-	    return new ResponseEntity<String>(result, httpStatus);
+
+	    return new ResponseEntity<String>(httpStatus);
 	  }
-	
+
 	@RequestMapping(value="/logout", method=RequestMethod.GET)  
     public ResponseEntity<String> logoutPage(HttpServletRequest request, HttpServletResponse response) {  
         Authentication auth = SecurityContextHolder.getContext().getAuthentication(); 
@@ -71,8 +70,9 @@ public class UserController {
            new SecurityContextLogoutHandler().logout(request, response, auth);  
            httpStatus = HttpStatus.OK;
            result="ok";
-        }  
-         return new ResponseEntity<String>(result,httpStatus);
+        }
+		assert httpStatus != null;
+		return new ResponseEntity<String>(httpStatus);
      }  
 	
 	
