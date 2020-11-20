@@ -12,31 +12,29 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import itss.nhom7.entities.User;
 import itss.nhom7.jwt.JwtService;
+import itss.nhom7.model.UserModel;
 import itss.nhom7.service.impl.UserService;
 
 @RestController
-@RequestMapping(value="/aims")
+@RequestMapping(value="/users")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@RequestMapping(value = "/aims")
 public class UserController {
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private JwtService jwtService;
-	
-	
-//	@PostMapping(value="/register")
-//	public void addUser(@RequestBody User user) {
-//		user.setCreatedDate(new Date());
-//		
-//		userService.addUser(user);
-//		System.out.println("123");
-//	}
-	
 	@RequestMapping(value = "/login", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
 	  public ResponseEntity<String> login(User user, HttpServletResponse response, HttpServletRequest request) {
 	    String result = "";
@@ -82,7 +80,44 @@ public class UserController {
 		userService.updateUser(user);
 		
 		return new ResponseEntity<Object>("Edit successfully!",HttpStatus.OK);
+  }
+
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	public ResponseEntity<String> logoutPage(HttpServletRequest request, HttpServletResponse response) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+		HttpStatus httpStatus = null;
+		String result = "error";
+		if (auth != null) {
+			new SecurityContextLogoutHandler().logout(request, response, auth);
+			httpStatus = HttpStatus.OK;
+			result = "ok";
+		}
+		return new ResponseEntity<String>(result, httpStatus);
 	}
 
+	@PutMapping(value = "/applyNewPassword")
+	public ResponseEntity<Object> applyNewPassword(@RequestBody User user) {
+
+		userService.applyNewPassword(user);
+
+		return new ResponseEntity<Object>("Edit successfully!", HttpStatus.OK);
+	}
+
+	@GetMapping(value = "editUser/{id}")
+	public ResponseEntity<UserModel> viewUser(@PathVariable("id") int id) {
+
+		UserModel userModel = userService.getUser(id);
+		return new ResponseEntity<UserModel>(userModel, HttpStatus.OK);
+
+	}
+
+	@PutMapping(value = "/editUser")
+	public ResponseEntity<Object> editUser(@RequestBody UserModel userModel) {
+
+		userService.editUser(userModel);
+
+		return new ResponseEntity<Object>("Edit successfully!", HttpStatus.OK);
+	}
 
 }
