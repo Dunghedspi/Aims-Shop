@@ -37,16 +37,16 @@ public class JwtAuthenticationTokenFilter extends UsernamePasswordAuthentication
 		
 		if(jwtService.validateToken(authToken)) {
 			
-			String username = jwtService.getUsernameToken(authToken);
+			String email = jwtService.getEmailToken(authToken);
 			
-			itss.nhom7.entities.User user = userService.findByUsername(username);
+			itss.nhom7.entities.User user = userService.findByEmail(email);
 			
 			if(user!=null) {
 				
 				boolean enable = true;
 				boolean accountNonExpired = true;
 				boolean credentialsNonExpired = true;
-				UserDetails userDetail = new User(username, user.getPassword(),enable,accountNonExpired,credentialsNonExpired,accountNonExpired, user.getAuthorities());
+				UserDetails userDetail = new User(email, user.getPassword(),enable,accountNonExpired,credentialsNonExpired,accountNonExpired, user.getAuthorities());
 			
 				
 				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetail, null,userDetail.getAuthorities());

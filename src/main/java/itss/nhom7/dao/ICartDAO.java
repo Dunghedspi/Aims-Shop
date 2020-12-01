@@ -5,10 +5,10 @@ import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import itss.nhom7.entities.Product;
+import itss.nhom7.entities.Cart;
 
 @Transactional
 @Repository
-public interface IProductDAO extends JpaRepository<Product, Integer> {
+public interface ICartDAO extends JpaRepository<Cart, Integer>{
 
 }

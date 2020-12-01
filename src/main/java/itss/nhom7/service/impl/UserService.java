@@ -41,7 +41,6 @@ public class UserService implements IUserService, UserDetailsService {
 			return false;
 
 		} else {
-			System.out.println(userfind.getUserName());
 
 			if (user.getPassword().equals(userfind.getPassword())) {
 				return true;
@@ -137,6 +136,12 @@ public class UserService implements IUserService, UserDetailsService {
 
 		return modelMapper.map(userDao.getOne(id), UserModel.class);
 
+	}
+
+	@Override
+	public User findByEmail(String email) {
+		
+		return userDao.findByEmail(email);
 	}
 
 }

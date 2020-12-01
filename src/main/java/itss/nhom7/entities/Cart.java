@@ -1,7 +1,7 @@
 package itss.nhom7.entities;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,7 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -27,38 +27,38 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="order")
-public class Order {
+@Table(name="cart")
+public class Cart implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name="memo")
-	private String memo;
+	@Column(name="tokenUser")
+	private String tokenUser;
 	
-	@Column(name="total")
-	private int total;
 	
-	@Column(name="status")
-	private int status;
-	
-	@Column(name="created_at")
-	private Date createdAt;
-	
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name="user_id")
+	@EqualsAndHashCode.Exclude
+    @ToString.Exclude
 	private User user;
 	
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude // không sử dụng trường này trong equals và hashcode
     @ToString.Exclude // Khoonhg sử dụng trong toString()
     
-    @JoinTable(name = "order_detail", //Tạo ra một join Table tên là "cart_detail"
-            joinColumns = @JoinColumn(name = "order_id"),  // TRong đó, khóa ngoại chính là cart_id trỏ tới class hiện tại (Cart)
+    @JoinTable(name = "cart_detail", //Tạo ra một join Table tên là "cart_detail"
+            joinColumns = @JoinColumn(name = "cart_id"),  // TRong đó, khóa ngoại chính là cart_id trỏ tới class hiện tại (Cart)
             inverseJoinColumns = @JoinColumn(name = "product_id") //Khóa ngoại thứ 2 trỏ tới thuộc tính ở dưới (Product)
     )
 	
 	private List<Product> products = new ArrayList<>();
-	
+
+
 }
