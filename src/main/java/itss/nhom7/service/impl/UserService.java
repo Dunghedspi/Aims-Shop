@@ -138,4 +138,10 @@ public class UserService implements IUserService, UserDetailsService {
 
 	}
 
+	@Override
+	public User findByEmail(String email) {
+		
+		return userDao.findByEmail(email);
+	}
+
 }

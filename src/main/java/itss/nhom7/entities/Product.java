@@ -35,6 +35,8 @@ public class Product {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
+	// name, price, value la thuoc tinh chung cho tat ca product
+	// quantity la thuoc tinhs chung cho cac san pham physical
 	@Column(name="name")
 	private String name;
 	
@@ -43,6 +45,11 @@ public class Product {
 	
 	@Column(name="price")
 	private int price;
+	
+	@Column(name="quantity")
+	private int quantity;
+	
+	// cac thuoc tinh  cho book
 	
 	@Column(name="author")
 	private String author;
@@ -65,11 +72,15 @@ public class Product {
 	@Column(name="type")
 	private String type;
 	
+	//cac thuoc tinh chung cho cd,lp
+	
 	@Column(name="artists")
 	private String artists;
 	
 	@Column(name="tracklist")
 	private String tracklist;
+	
+	// cac thuoc tinh cho dvd
 
 	@Column(name="runtime")
 	private int runtime;
@@ -77,9 +88,6 @@ public class Product {
 	@Column(name="subtitles")
 	private String subtitles;
 
-	@Column(name="quantity")
-	private int quantity;
-	
 	@Column(name="description")
 	private String description;
 	
@@ -92,6 +100,8 @@ public class Product {
 	@Column(name="size")
 	private Double size;
 	
+	@Column(name="is_delete")
+	private boolean isDelete;
 	
 	@Column(name="modified_by")
 	private String modifiedBy;

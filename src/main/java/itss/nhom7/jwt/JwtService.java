@@ -1,9 +1,5 @@
 package itss.nhom7.jwt;
 
-import java.util.Date;
-
-import org.springframework.stereotype.Service;
-
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -12,18 +8,21 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 public class JwtService {
 
 	
-	public static final String USERNAME = "username";
+	public static final String EMAIL = "email";
 	public static final String SECRET_KEY = "ITSS_Team7_NguyenVanDung_NguyenThiThuUyen_PhamMinhHieu_NguyenVietLong";
 	public static final int EXPIRE_TIME = 68400000;
 	
 	
 	//create token
-	public String generateTokenLogin(String username) {
+	public String generateTokenLogin(String email) {
 		
 		String token = null;
 		
@@ -32,7 +31,7 @@ public class JwtService {
 			JWSSigner signer = new MACSigner(generateShareSecret());
 			
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
-			builder.claim(USERNAME,username);
+			builder.claim(EMAIL,email);
 			builder.expirationTime(generateExpirationDate());
 			
 			JWTClaimsSet claimsSet = builder.build();
@@ -70,20 +69,20 @@ public class JwtService {
 		return claims;
 	}
 	
-	//lay usernam trong token
-	public String getUsernameToken(String token) {
+	//lay email trong token
+	public String getEmailToken(String token) {
 		
-		String username=null;
+		String email=null;
 		
 		try {
 			
 			JWTClaimsSet claims = getClaimsFromToken(token);
-			username = claims.getStringClaim(USERNAME);
+			email = claims.getStringClaim(EMAIL);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		
-		return username;
+		return email;
 	}
 
 
@@ -131,8 +130,8 @@ public class JwtService {
 			return false;
 		}
 		
-		String username = getUsernameToken(token);
-		if(username == null || username.isEmpty()) {
+		String email = getEmailToken(token);
+		if(email == null || email.isEmpty()) {
 			return false;
 		}
 		

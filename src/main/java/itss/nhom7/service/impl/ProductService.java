@@ -24,6 +24,7 @@ public class ProductService implements IProductService{
 	@Override
 	public void editProduct(Product product, String category) {
 		
+		
 		if(category.equals("bookPhy")) {
 			editBookPhy(modelMapper.map(product, BookPhysicalModel.class));
 		}else if(category.equals("cdPhy")) {
@@ -32,25 +33,62 @@ public class ProductService implements IProductService{
 			editDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
 		}else if(category.equals("lpPhy")) {
 			editLPPhy(modelMapper.map(product, LPPhysicalModel.class));
+		}else {
+			System.out.println("Edit failed");
 		}
 		
 	}
 
 
 	private void editDVDPhy(DVDPhysicalModel dvd) {
-		// TODO Auto-generated method stub
+		
+		Product product = productDao.getOne(dvd.getId());
+		product.setName(dvd.getName());
+		product.setPrice(dvd.getPrice());
+		product.setValue(dvd.getValue());
+		product.setQuantity(dvd.getQuantity());
+		product.setRuntime(dvd.getRuntime());
+		product.setSubtitles(dvd.getSubtitles());
+		product.setPublicationDate(dvd.getPublicatioDate());
+		product.setType(dvd.getType());
+		product.setLanguage(dvd.getLanguage());
+		product.setAuthor(dvd.getAuthor());
+		
+		productDao.save(product);
+		
 		
 	}
 
 
 	private void editLPPhy(LPPhysicalModel lp) {
-		// TODO Auto-generated method stub
 		
+		Product product = productDao.getOne(lp.getId());
+		product.setName(lp.getName());
+		product.setPrice(lp.getPrice());
+		product.setValue(lp.getValue());
+		product.setQuantity(lp.getQuantity());
+		product.setArtists(lp.getArtists());
+		product.setTracklist(lp.getArtists());
+		product.setType(lp.getType());
+		product.setInputDate(lp.getInputDate());
+		
+		productDao.save(product);
 	}
 
 
 	private void editCDPhy(CDPhysicalModel cd) {
-		// TODO Auto-generated method stub
+		
+		Product product = productDao.getOne(cd.getId());
+		product.setName(cd.getName());
+		product.setPrice(cd.getPrice());
+		product.setValue(cd.getValue());
+		product.setQuantity(cd.getQuantity());
+		product.setArtists(cd.getArtists());
+		product.setTracklist(cd.getArtists());
+		product.setType(cd.getType());
+		product.setInputDate(cd.getInputDate());
+		
+		productDao.save(product);
 		
 	}
 

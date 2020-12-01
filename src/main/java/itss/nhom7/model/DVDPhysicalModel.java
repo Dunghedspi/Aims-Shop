@@ -15,4 +15,6 @@ public class DVDPhysicalModel extends MediaModel{
 	private int runtime;
 	private String subtitles;
 	private Date publicatioDate;
+	private String language;
+	private String author;
 }
