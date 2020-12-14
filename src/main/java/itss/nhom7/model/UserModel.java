@@ -1,5 +1,7 @@
 package itss.nhom7.model;
 
+import java.util.Calendar;
+
 import itss.nhom7.form.CustomerForm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,12 +13,14 @@ import lombok.NoArgsConstructor;
 
 public class UserModel {
 	 
-    private String userName;
     private String fullName;
     private String avataUrl;
     private String address;
     private String email;
+    private String password;
     private String phone;
+    private String role;
+    private Calendar createdAt;
    
  
     private boolean active;

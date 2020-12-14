@@ -1,6 +1,6 @@
 package itss.nhom7.model;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,5 +14,5 @@ public class LPPhysicalModel extends MediaModel{
 	private String artists;
 	private String tracklist;
 	private String type;
-	private Date inputDate;
+	private Calendar inputDate;
 }

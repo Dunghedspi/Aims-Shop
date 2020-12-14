@@ -68,6 +68,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		
 		http.csrf().disable();
 		
-		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*").permitAll();
+		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/users/*").permitAll();
 	}
 }

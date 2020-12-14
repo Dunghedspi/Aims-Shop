@@ -2,6 +2,7 @@ package itss.nhom7.entities;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -43,11 +43,11 @@ public class Cart implements Serializable{
 	private String tokenUser;
 	
 	
-	@OneToOne
-	@JoinColumn(name="user_id")
-	@EqualsAndHashCode.Exclude
-    @ToString.Exclude
-	private User user;
+	@Column(name="user_id")
+	private int userId;
+	
+	@Column(name="created_at")
+	private Calendar createdAt;
 	
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude // không sử dụng trường này trong equals và hashcode

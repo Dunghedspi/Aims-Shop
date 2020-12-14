@@ -1,7 +1,11 @@
 package itss.nhom7.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import itss.nhom7.dao.IUserDAO;
 import itss.nhom7.entities.User;
+import itss.nhom7.model.CartModel;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.IUserService;
 
@@ -25,6 +30,9 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private IUserDAO userDao;
+	
+	@Autowired
+	private CartService cartService;
 
 	@Autowired
 	private JavaMailSender emailSender;
@@ -33,9 +41,9 @@ public class UserService implements IUserService, UserDetailsService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public boolean checkLogin(User user) {
+	public boolean checkLogin(User user,Cookie[] cookies) {
 
-		User userfind = userDao.findByUserName(user.getUserName());
+		User userfind = userDao.findByEmail(user.getEmail());
 
 		if (userfind == null) {
 			return false;
@@ -43,6 +51,7 @@ public class UserService implements IUserService, UserDetailsService {
 		} else {
 
 			if (user.getPassword().equals(userfind.getPassword())) {
+				updateUserId(cookies, userfind.getId());
 				return true;
 			} else {
 				return false;
@@ -50,21 +59,31 @@ public class UserService implements IUserService, UserDetailsService {
 		}
 	}
 
-//	@Override
-//	public void addUser(User user) {
-//
-//		userDao.addUser(user);
-//
-//	}
+	@Override
+	public void addUser(UserModel userModel) {
+		
+		User user = new User();
+		user.setActive(true);
+		user.setFullName(userModel.getFullName());
+		user.setAvataUrl(userModel.getAvataUrl());
+		user.setEmail(userModel.getEmail());
+		user.setPassword(userModel.getPassword());
+		user.setPhone(userModel.getPhone());
+		user.setRole(userModel.getRole());
+		user.setCreatedAt(Calendar.getInstance());
+
+		userDao.saveAndFlush(user);
+
+	}
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-		User user = userDao.findByUserName(username);
+		User user = userDao.findByEmail(email);
 
 		if (user == null) {
 
-			throw new UsernameNotFoundException("User " + username + " was not found in the database");
+			throw new UsernameNotFoundException("User " + email + " was not found in the database");
 		}
 
 		String role = user.getRole();
@@ -81,17 +100,12 @@ public class UserService implements IUserService, UserDetailsService {
 		boolean accountNonLocked = true;
 
 		UserDetails userDetails = (UserDetails) new org.springframework.security.core.userdetails.User(
-				user.getUserName(), user.getPassword(), enable, accountNonExpired, credentialsNonExpired,
+				user.getEmail(), user.getPassword(), enable, accountNonExpired, credentialsNonExpired,
 				accountNonLocked, grantList);
 
 		return userDetails;
 	}
 
-	@Override
-	public User findByUsername(String username) {
-
-		return userDao.findByUserName(username);
-	}
 
 	@Override
 	public void applyNewPassword(User user) {
@@ -100,7 +114,7 @@ public class UserService implements IUserService, UserDetailsService {
 
 		String passRandom = RandomStringUtils.randomAlphanumeric(8);
 
-		if (user.getUserName().equals(userUpdate.getUserName())) {
+		if (user.getEmail().equals(userUpdate.getEmail())) {
 			userUpdate.setPassword(passRandom);
 			userDao.save(userUpdate);
 
@@ -120,8 +134,6 @@ public class UserService implements IUserService, UserDetailsService {
 	public void editUser(UserModel userModel) {
 
 		User user = userDao.findByEmail(userModel.getEmail());
-
-		user.setUserName(userModel.getUserName());
 		user.setFullName(userModel.getFullName());
 		user.setAvataUrl(userModel.getAvataUrl());
 		user.setAddress(userModel.getAddress());
@@ -142,6 +154,39 @@ public class UserService implements IUserService, UserDetailsService {
 	public User findByEmail(String email) {
 		
 		return userDao.findByEmail(email);
+	}
+
+	@Override
+	public void updateExpired(String tokenUser) {
+		
+		cartService.updateExpired(tokenUser);
+		
+	}
+
+	@Override
+	public HttpServletResponse createCookie(String tokenUser,HttpServletResponse response) {
+		Cookie cookie = new Cookie("tokenUser",tokenUser);
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+		response.addCookie(cookie);
+		
+		cartService.addTokenUser(tokenUser);
+		
+		return response;
+	}
+
+
+	private void updateUserId(Cookie[] cookies, int userId) {
+		CartModel cartModel = cartService.findByUserId(userId);
+		if(cartModel.getUserId()==0) {
+			for(Cookie cookie : cookies) {
+				if(cookie.getName().equals("tokenUser")) {
+					String tokenUser = cookie.getValue();
+					cartService.updateUserId(tokenUser, userId);
+					break;
+				}
+			}
+		}
 	}
 
 }

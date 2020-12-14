@@ -7,4 +7,5 @@ public class ProductDAO {
 
 	@PersistenceContext
 	EntityManager entityManager;
+
 }

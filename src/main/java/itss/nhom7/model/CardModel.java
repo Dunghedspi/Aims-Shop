@@ -1,7 +1,5 @@
 package itss.nhom7.model;
 
-import java.util.Calendar;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,14 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartModel {
-
+public class CardModel {
+	
 	private int id;
 
-	private String tokenUser;
+	private int numberCard;
 
-	private int userId;
+	private String nameBank;
 	
-	private Calendar createdAt;
-
+	private int userId;
 }

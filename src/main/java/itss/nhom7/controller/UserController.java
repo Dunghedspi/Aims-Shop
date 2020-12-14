@@ -1,5 +1,7 @@
 package itss.nhom7.controller;
 
+import java.util.Calendar;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +17,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import itss.nhom7.entities.User;
 import itss.nhom7.jwt.JwtService;
 import itss.nhom7.model.UserModel;
+import itss.nhom7.service.impl.CartService;
 import itss.nhom7.service.impl.UserService;
 
 @RestController
@@ -37,36 +41,56 @@ public class UserController {
 	@Autowired
 	private JwtService jwtService;
 	
+	@Autowired
+	private CartService cartService;
+	
 	@RequestMapping(value="/home")
 	public ResponseEntity<Object> home(HttpServletResponse response, HttpServletRequest request){
 		
 		Cookie[] cookies = request.getCookies();
 		String tokenUser =null;
+		int flag=0;
 		if(cookies == null) {
-			tokenUser = RandomStringUtils.randomAlphanumeric(8);
-			Cookie cookie = new Cookie("tokenUser",tokenUser);
-			cookie.setMaxAge(24*60*60); // han la 2 ngay
-			cookie.setHttpOnly(true);
-			cookie.setPath("/");
-			response.addCookie(cookie);
+			response = userService.createCookie(RandomStringUtils.randomAlphanumeric(8),response);
 		}else {
 			for(Cookie cookie : cookies) {
 				if(cookie.getName().equals("tokenUser")) {
 					tokenUser = cookie.getValue();
+					if(cartService.findByTokenUser(tokenUser).getTokenUser()!=null) {
+						Calendar expired = cartService.findByTokenUser(tokenUser).getCreatedAt();
+						if(expired.before(Calendar.getInstance())) {
+							userService.updateExpired(tokenUser);
+						}
+					}else {
+						response = userService.createCookie(tokenUser,response);
+					}
+					flag++;
+					break;
 				}
 			}
+			if(flag==0) {
+				response = userService.createCookie(RandomStringUtils.randomAlphanumeric(8),response);
+			}
 		}
-		System.out.println(tokenUser);
 		
 		return new ResponseEntity<Object>("Access successfully!",HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/login", method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	@PostMapping(value="/register",produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	public ResponseEntity<Object> createUser(UserModel userModel) {
+		
+		userService.addUser(userModel);
+		return new ResponseEntity<Object>("Add successfully!",HttpStatus.OK);
+	}
+	
+
+	@PostMapping(value = "/login",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	  public ResponseEntity<String> login(User user, HttpServletResponse response, HttpServletRequest request) {
 	    String result = "";
 	    HttpStatus httpStatus = null;
+	    Cookie[] cookies = request.getCookies();
 	    try {
-	      if (userService.checkLogin(user)) {
+	      if (userService.checkLogin(user,cookies)) {
 	        result = jwtService.generateTokenLogin(user.getEmail());
 	        httpStatus = HttpStatus.OK;
 	        Cookie jwt = new Cookie("Authorization",result);
@@ -80,7 +104,7 @@ public class UserController {
 			System.out.println(ex.getMessage());
 	      httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 	    }
-
+	    
 	    return new ResponseEntity<String>(httpStatus);
 	  }
 
@@ -99,9 +123,9 @@ public class UserController {
 		return new ResponseEntity<Object>(result,httpStatus);
      }  
 
-	//@PutMapping(value = "/applyNewPassword",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	@PutMapping(value = "/applyNewPassword")
-	public ResponseEntity<Object> applyNewPassword(@RequestBody User user) {
+	@PutMapping(value = "/applyNewPassword",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	//@PutMapping(value = "/applyNewPassword")
+	public ResponseEntity<Object> applyNewPassword(User user) {
 
 		userService.applyNewPassword(user);
 

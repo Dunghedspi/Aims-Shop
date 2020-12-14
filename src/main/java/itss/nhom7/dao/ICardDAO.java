@@ -1,16 +1,18 @@
 package itss.nhom7.dao;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import itss.nhom7.entities.Cart;
+import itss.nhom7.entities.Card;
 
 @Transactional
 @Repository
-public interface ICartDAO extends JpaRepository<Cart, Integer>{
+public interface ICardDAO extends JpaRepository<Card, Integer> {
+	List<Card> findListCardByUserId(int userId);
 
-	Cart findByTokenUser(String tokenUser);
-	Cart findByUserId(int userId);
+	Card findByUserId(int userId);
 }
