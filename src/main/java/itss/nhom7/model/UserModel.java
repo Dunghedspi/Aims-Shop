@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 
 public class UserModel {
 	 
+	private int id;
     private String fullName;
     private String avataUrl;
     private String address;
@@ -20,7 +21,9 @@ public class UserModel {
     private String password;
     private String phone;
     private String role;
+    private String sex;
     private Calendar createdAt;
+    private Calendar dateOfBirth;
    
  
     private boolean active;

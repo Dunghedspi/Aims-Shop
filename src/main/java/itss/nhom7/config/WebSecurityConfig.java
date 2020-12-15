@@ -3,12 +3,15 @@ package itss.nhom7.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import itss.nhom7.filter_handler.CustomAccessDeniedHandler;
 import itss.nhom7.filter_handler.JwtAuthenticationTokenFilter;
@@ -64,10 +67,39 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	}
 	
 	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
-		http.csrf().disable();
+//		http.csrf().disable();
+//		
+//		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/users/*").permitAll();
+
+		httpSecurity.authorizeRequests().antMatchers("/api/home/**","/api/cart/**").permitAll();
 		
-		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/users/*").permitAll();
+		httpSecurity.csrf().ignoringAntMatchers("/api/**");
+		httpSecurity.antMatcher("/api/**")
+				.httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint()).and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()		
+				.antMatchers(HttpMethod.GET,"/api/card/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.POST,"/api/card/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.PUT,"/api/card/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.DELETE,"/api/card/**").access("hasRole('ROLE_USER')")
+				
+				.antMatchers(HttpMethod.GET,"/api/user/**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
+				//access("hasRole('ROLE_USER' or hasRole('ROLE_ADMIN')")
+				.antMatchers(HttpMethod.POST,"/api/user/addUser").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.PUT,"/api/user/editUser").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.PUT,"/api/user/blockUser/**").access("hasRole('ROLE_ADMIN')")
+				
+				
+				.antMatchers(HttpMethod.GET,"/api/product/**").access("hasRole('ROLE_USER')")
+				
+				.antMatchers(HttpMethod.POST,"/api/product/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers(HttpMethod.PUT,"/api/product/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers(HttpMethod.DELETE,"/api/product/**").access("hasRole('ROLE_ADMIN')")
+				
+				
+				.and()
+				.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+				.exceptionHandling().accessDeniedHandler(customAccessDeniedHandler());
 	}
 }

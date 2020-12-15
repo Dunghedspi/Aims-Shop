@@ -1,10 +1,12 @@
 package itss.nhom7.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +21,8 @@ import itss.nhom7.model.MediaModel;
 import itss.nhom7.service.impl.ProductService;
 
 @RestController
-@RequestMapping(value="/aims")
+@RequestMapping(value="/api/product")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ProductController {
 	
 	@Autowired
@@ -27,9 +30,15 @@ public class ProductController {
 	
 	//Them san pham theo loai
 	@PostMapping(value="/addProduct/{category}")
-	public ResponseEntity<Object> addProduct(@PathVariable("category") String category,@RequestBody Product product){
-		productService.addProduct(product, category);
-		return new ResponseEntity<Object>("Add Product Successfully!",HttpStatus.OK);
+	public ResponseEntity<String> addProduct(@PathVariable("category") String category,@RequestBody Product product){
+		HttpStatus httpStatus = null;
+		try {
+			productService.addProduct(product, category);
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<String>(httpStatus);
 	}
 	//Lay cac san pham ban chay
 	@GetMapping(value="/getProductTrending")
@@ -38,8 +47,16 @@ public class ProductController {
 	}
 	//Tim kiem cac san pham theo ten
 	@GetMapping(value="/getProductByName/{name}")
-	public ResponseEntity<List<MediaModel>> getProductByName(@PathVariable("name") String name){
-		return new ResponseEntity<List<MediaModel>>(productService.getListProductByName(name),HttpStatus.OK);
+	public ResponseEntity<Object> getProductByName(@PathVariable("name") String name){
+		HttpStatus httpStatus = null;
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		try {
+			mediaModels = productService.getListProductByName(name);
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<Object>(mediaModels,httpStatus);
 	}
 	//Lay cac san pham theo loai
 	@GetMapping(value="/getProduct/{category}")
@@ -48,18 +65,31 @@ public class ProductController {
 	}
 	//Sua thong tin san pham
 	@PutMapping(value="/editProduct/{category}")
-	public ResponseEntity<Object> editProduct(@PathVariable("category") String category,@RequestBody Product product){
+	public ResponseEntity<String> editProduct(@PathVariable("category") String category,@RequestBody Product product){
+		HttpStatus httpStatus = null;
+		try {
+			productService.editProduct(product, category);
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<String>(httpStatus);
 		
-		productService.editProduct(product, category);
-		return new ResponseEntity<Object>("Edit Product Successfully!",HttpStatus.OK);
 		
 	}
 	//xoa san pham
 	@DeleteMapping(value="/deleteProduct/{id}")
-	public ResponseEntity<Object> deleteProduct(@PathVariable("id") int id){
+	public ResponseEntity<String> deleteProduct(@PathVariable("id") int id){
 		
-		productService.deleteProduct(id);
+		HttpStatus httpStatus = null;
+		try {
+			productService.deleteProduct(id);
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
 		
-		return new ResponseEntity<Object>("Delete Product Successfully!",HttpStatus.OK);
+		return new ResponseEntity<String>(httpStatus);
+		
 	}
 }

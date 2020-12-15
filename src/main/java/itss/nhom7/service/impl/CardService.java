@@ -24,14 +24,17 @@ public class CardService implements ICardService{
 	public List<CardModel> getListCardByUserId(int userId) {
 		List<Card> cards = cardDao.findListCardByUserId(userId);
 		List<CardModel> cardModels = new ArrayList<CardModel>();
-		for(Card card : cards) {
-			CardModel cardModel = new CardModel();
-			cardModel.setId(card.getId());
-			cardModel.setNameBank(card.getNameBank());
-			cardModel.setNumberCard(card.getNumberCard());
-			cardModel.setUserId(card.getUser().getId());
-			cardModels.add(cardModel);
+		if(cards != null) {
+			for(Card card : cards) {
+				CardModel cardModel = new CardModel();
+				cardModel.setId(card.getId());
+				cardModel.setNameBank(card.getNameBank());
+				cardModel.setNumberCard(card.getNumberCard());
+				cardModel.setUserId(card.getUser().getId());
+				cardModels.add(cardModel);
+			}
 		}
+		
 		return cardModels;
 	}
 
@@ -39,10 +42,12 @@ public class CardService implements ICardService{
 	public CardModel getCartModelById(int id) {
 		Card card = cardDao.getOne(id);
 		CardModel cardModel = new CardModel();
-		cardModel.setId(card.getId());
-		cardModel.setNameBank(card.getNameBank());
-		cardModel.setNumberCard(card.getNumberCard());
-		cardModel.setUserId(card.getUser().getId());
+		if(card != null) {
+			cardModel.setId(card.getId());
+			cardModel.setNameBank(card.getNameBank());
+			cardModel.setNumberCard(card.getNumberCard());
+			cardModel.setUserId(card.getUser().getId());
+		}
 		return cardModel;
 	}
 
@@ -57,7 +62,9 @@ public class CardService implements ICardService{
 
 	@Override
 	public void deleteCard(int idCard) {
-		cardDao.deleteById(idCard);
+		if(cardDao.getOne(idCard) !=null) {
+			cardDao.deleteById(idCard);
+		}
 	}
 
 }

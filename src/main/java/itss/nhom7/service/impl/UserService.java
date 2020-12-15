@@ -1,5 +1,6 @@
 package itss.nhom7.service.impl;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.GrantedAuthority;
@@ -60,19 +62,33 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public void addUser(UserModel userModel) {
-		
-		User user = new User();
-		user.setActive(true);
-		user.setFullName(userModel.getFullName());
-		user.setAvataUrl(userModel.getAvataUrl());
-		user.setEmail(userModel.getEmail());
-		user.setPassword(userModel.getPassword());
-		user.setPhone(userModel.getPhone());
-		user.setRole(userModel.getRole());
-		user.setCreatedAt(Calendar.getInstance());
+	public HttpStatus addUser(UserModel userModel) throws SQLException {
+		HttpStatus status = null;
+		try {
+			User userCheck = userDao.findByEmail(userModel.getEmail());
+			if(userCheck==null) {
+				User user = new User();
+				user.setActive(true);
+				user.setFullName(userModel.getFullName());
+				user.setAvataUrl(userModel.getAvataUrl());
+				user.setEmail(userModel.getEmail());
+				user.setPassword(userModel.getPassword());
+				user.setPhone(userModel.getPhone());
+				user.setRole(userModel.getRole());
+				user.setCreatedAt(Calendar.getInstance());
 
-		userDao.saveAndFlush(user);
+				userDao.saveAndFlush(user);
+				status = HttpStatus.OK;
+			}else {
+				status=HttpStatus.CREATED;
+			}
+		}catch (Exception e) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+			return status;
+		
+		
 
 	}
 
@@ -136,7 +152,8 @@ public class UserService implements IUserService, UserDetailsService {
 		User user = userDao.findByEmail(userModel.getEmail());
 		user.setFullName(userModel.getFullName());
 		user.setAvataUrl(userModel.getAvataUrl());
-		user.setAddress(userModel.getAddress());
+		user.setSex(userModel.getSex());
+		user.setDateOfBirth(userModel.getDateOfBirth());
 		user.setPhone(userModel.getPhone());
 
 		userDao.save(user);
@@ -157,9 +174,9 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public void updateExpired(String tokenUser) {
-		
+	public void updateExpired(String tokenUser) throws SQLException {
 		cartService.updateExpired(tokenUser);
+		
 		
 	}
 
@@ -187,6 +204,16 @@ public class UserService implements IUserService, UserDetailsService {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void blockUser(int id) {
+		User user = userDao.getOne(id);
+		if(user != null) {
+			user.setActive(false);
+			userDao.saveAndFlush(user);
+		}
+		
 	}
 
 }

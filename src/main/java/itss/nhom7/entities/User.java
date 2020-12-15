@@ -48,8 +48,8 @@ public class User implements Serializable{
 	@Column(name="password")
 	private String password;
 	
-	@Column(name="address")
-	private String address;
+	@Column(name="sex")
+	private String sex;
 	
 	@Column(name="phone")
 	private String phone;
@@ -60,12 +60,11 @@ public class User implements Serializable{
 	@Column(name="active")
 	private boolean active;
 	
-	
-	@Column(name="remember_token")
-	private String rememberToken;
-	
 	@Column(name="created_at")
 	private Calendar createdAt;
+	
+	@Column(name="date_of_birth")
+	private Calendar dateOfBirth;
 	
 	@OneToMany(mappedBy = "user")
 	private List<Order> orders = new ArrayList<>();
