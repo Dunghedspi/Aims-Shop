@@ -1,8 +1,11 @@
 package itss.nhom7.service.impl;
 
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.Cookie;
@@ -21,7 +24,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.dao.IUserDAO;
+import itss.nhom7.entities.Address;
 import itss.nhom7.entities.User;
 import itss.nhom7.model.CartModel;
 import itss.nhom7.model.UserModel;
@@ -32,6 +37,8 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private IUserDAO userDao;
+	@Autowired
+	private IAddressDAO addressDao;
 	@Autowired
 	private CartService cartService;
 	@Autowired
@@ -69,7 +76,16 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setPhone(userModel.getPhone());
 				user.setRole(userModel.getRole());
 				user.setCreatedAt(Calendar.getInstance());
-
+				
+				Address address = new Address();
+				address.setCountry(userModel.getCountry());
+				address.setProvince(userModel.getProvince());
+				address.setDistrict(userModel.getDistrict());
+				address.setVillage(userModel.getVillage());
+				address.setStreet(userModel.getStreet());
+				addressDao.save(address);
+				
+				user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(), userModel.getVillage(), userModel.getStreet()));
 				userDao.saveAndFlush(user);
 				status = HttpStatus.OK;
 			}else {
@@ -125,13 +141,14 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public void editUser(UserModel userModel) {
+	public void editUser(UserModel userModel) throws ParseException {
 
 		User user = userDao.findByEmail(userModel.getEmail());
 		user.setFullName(userModel.getFullName());
 		user.setAvataUrl(userModel.getAvataUrl());
 		user.setSex(userModel.getSex());
-		user.setDateOfBirth(userModel.getDateOfBirth());
+		Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth());
+		user.setDateOfBirth(dateOfBirth);
 		user.setPhone(userModel.getPhone());
 
 		userDao.save(user);
@@ -192,7 +209,7 @@ public class UserService implements IUserService, UserDetailsService {
 		UserModel userReturn = new UserModel();
 		userReturn.setEmail(userTmp.getEmail());
 		userReturn.setFullName(userTmp.getFullName());
-		userReturn.setDateOfBirth(userTmp.getDateOfBirth());
+		userReturn.setDateOfBirth(userTmp.getDateOfBirth().toString());
 		userReturn.setAvataUrl(userTmp.getAvataUrl());
 		userReturn.setRole(userTmp.getRole());
 		userReturn.setPhone(userTmp.getPhone());

@@ -96,6 +96,7 @@ public class AuthController {
 	}
 
 	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	public ResponseEntity<String> createUser(UserModel userModel) {
 		HttpStatus httpStatus = null;
 		try {
