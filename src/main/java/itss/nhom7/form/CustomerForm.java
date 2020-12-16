@@ -15,15 +15,12 @@ public class CustomerForm {
     private String address;
     private String email;
     private String phone;
- 
     private boolean active;
- 
-   
- 
+    
     public CustomerForm(UserModel customerInfo) {
         if (customerInfo != null) {
             this.fullName = customerInfo.getFullName();
-            this.address = customerInfo.getAddress();
+           // this.address = customerInfo.getAddress();
             this.email = customerInfo.getEmail();
             this.phone = customerInfo.getPhone();
         }

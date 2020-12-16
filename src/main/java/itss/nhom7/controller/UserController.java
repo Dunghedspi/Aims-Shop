@@ -1,5 +1,7 @@
 package itss.nhom7.controller;
 
+import java.text.ParseException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ public class UserController {
 	}
 
 	@PutMapping(value = "/editUser")
-	public ResponseEntity<Object> editUser(@RequestBody UserModel userModel) {
+	public ResponseEntity<Object> editUser(@RequestBody UserModel userModel) throws ParseException {
 		if(userService.getUser(userModel.getId()) == null) {
 			return new ResponseEntity<Object>("Edit failed!", HttpStatus.NO_CONTENT);
 		}
