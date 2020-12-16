@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,26 +32,19 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private IUserDAO userDao;
-	
 	@Autowired
 	private CartService cartService;
-
 	@Autowired
 	private JavaMailSender emailSender;
-
 	@Autowired
 	private ModelMapper modelMapper;
 
 	@Override
 	public boolean checkLogin(User user,Cookie[] cookies) {
-
 		User userfind = userDao.findByEmail(user.getEmail());
-
 		if (userfind == null) {
 			return false;
-
 		} else {
-
 			if (user.getPassword().equals(userfind.getPassword())) {
 				updateUserId(cookies, userfind.getId());
 				return true;
@@ -61,8 +55,8 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public UserModel addUser(UserModel userModel) throws SQLException {
-		
+	public HttpStatus addUser(UserModel userModel) throws SQLException {
+		HttpStatus status = null;
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
@@ -77,43 +71,28 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setCreatedAt(Calendar.getInstance());
 
 				userDao.saveAndFlush(user);
+				status = HttpStatus.OK;
+			}else {
+				status=HttpStatus.CREATED;
 			}
 		}catch (Exception e) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
 		}
-		
-		User userTmp = userDao.findByEmail(userModel.getEmail());
-		UserModel userReturn = new UserModel();
-		userReturn.setEmail(userTmp.getEmail());
-		userReturn.setFullName(userTmp.getFullName());
-		userReturn.setDateOfBirth(userTmp.getDateOfBirth());
-		userReturn.setAvataUrl(userTmp.getAvataUrl());
-		userReturn.setRole(userTmp.getRole());
-		userReturn.setPhone(userTmp.getPhone());
-			return userReturn;
-		
-		
-
+			return status;
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
 		User user = userDao.findByEmail(email);
-
 		if (user == null) {
-
 			throw new UsernameNotFoundException("User " + email + " was not found in the database");
 		}
-
 		String role = user.getRole();
-
 		List<GrantedAuthority> grantList = new ArrayList<GrantedAuthority>();
-
 		GrantedAuthority authority = new SimpleGrantedAuthority(role);
-
 		grantList.add(authority);
-
 		boolean enable = user.isActive();
 		boolean accountNonExpired = true;
 		boolean credentialsNonExpired = true;
@@ -122,7 +101,6 @@ public class UserService implements IUserService, UserDetailsService {
 		UserDetails userDetails = (UserDetails) new org.springframework.security.core.userdetails.User(
 				user.getEmail(), user.getPassword(), enable, accountNonExpired, credentialsNonExpired,
 				accountNonLocked, grantList);
-
 		return userDetails;
 	}
 
@@ -131,19 +109,15 @@ public class UserService implements IUserService, UserDetailsService {
 	public void applyNewPassword(User user) {
 
 		User userUpdate = userDao.findByEmail(user.getEmail());
-
 		String passRandom = RandomStringUtils.randomAlphanumeric(8);
 
 		if (user.getEmail().equals(userUpdate.getEmail())) {
 			userUpdate.setPassword(passRandom);
 			userDao.save(userUpdate);
-
 			SimpleMailMessage message = new SimpleMailMessage();
-
 			message.setTo(userUpdate.getEmail());
 			message.setSubject("Change Password");
 			message.setText("Hello, We are Aims!\n Your new password is : " + passRandom);
-
 			// Send Message!
 			this.emailSender.send(message);
 		}
@@ -166,22 +140,17 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public UserModel getUser(int id) {
-
 		return modelMapper.map(userDao.getOne(id), UserModel.class);
-
 	}
 
 	@Override
 	public User findByEmail(String email) {
-		
 		return userDao.findByEmail(email);
 	}
 
 	@Override
 	public void updateExpired(String tokenUser) throws SQLException {
 		cartService.updateExpired(tokenUser);
-		
-		
 	}
 
 	@Override
@@ -192,11 +161,9 @@ public class UserService implements IUserService, UserDetailsService {
 		response.addCookie(cookie);
 		
 		cartService.addTokenUser(tokenUser);
-		
 		return response;
 	}
-
-
+	
 	private void updateUserId(Cookie[] cookies, int userId) {
 		CartModel cartModel = cartService.findByUserId(userId);
 		if(cartModel.getUserId()==0) {
@@ -217,7 +184,19 @@ public class UserService implements IUserService, UserDetailsService {
 			user.setActive(false);
 			userDao.saveAndFlush(user);
 		}
-		
+	}
+
+	@Override
+	public UserModel findByEmailAfterLogin(String email) throws SQLException {
+		User userTmp = userDao.findByEmail(email);
+		UserModel userReturn = new UserModel();
+		userReturn.setEmail(userTmp.getEmail());
+		userReturn.setFullName(userTmp.getFullName());
+		userReturn.setDateOfBirth(userTmp.getDateOfBirth());
+		userReturn.setAvataUrl(userTmp.getAvataUrl());
+		userReturn.setRole(userTmp.getRole());
+		userReturn.setPhone(userTmp.getPhone());
+		return userReturn;
 	}
 
 }

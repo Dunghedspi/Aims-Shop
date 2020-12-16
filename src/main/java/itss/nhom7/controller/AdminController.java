@@ -22,17 +22,16 @@ public class AdminController {
 	private UserService userService;
 	
 	@PostMapping(value = "/registerAdmin", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<Object> createUser(UserModel userModel) {
+	public ResponseEntity<String> createUser(UserModel userModel) {
 		HttpStatus httpStatus = null;
-		UserModel userReturn = new UserModel();
 		try {
 			userModel.setRole("ROLE_ADMIN");
-			userReturn = userService.addUser(userModel);
+			httpStatus = userService.addUser(userModel);
 		} catch (SQLException e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			e.printStackTrace();
 		}
-		return new ResponseEntity<Object>(userReturn,httpStatus);
+		return new ResponseEntity<String>(httpStatus);
 	}
 
 }

@@ -93,23 +93,23 @@ public class AuthController {
 	}
 
 	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<Object> createUser(UserModel userModel) {
+	public ResponseEntity<String> createUser(UserModel userModel) {
 		HttpStatus httpStatus = null;
-		UserModel userReturn = new UserModel();
 		try {
 			userModel.setRole("ROLE_USER");
-			userReturn = userService.addUser(userModel);
+			httpStatus = userService.addUser(userModel);
 		} catch (SQLException e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			e.printStackTrace();
 		}
-		return new ResponseEntity<Object>(userReturn,httpStatus);
+		return new ResponseEntity<String>(httpStatus);
 	}
 
 	@PostMapping(value = "/login", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<String> login(User user, HttpServletResponse response, HttpServletRequest request) {
+	public ResponseEntity<Object> login(User user, HttpServletResponse response, HttpServletRequest request) {
 		String result = "";
 		HttpStatus httpStatus = null;
+		UserModel userModel = new UserModel();
 		Cookie[] cookies = request.getCookies();
 		try {
 			if (userService.checkLogin(user, cookies)) {
@@ -119,6 +119,7 @@ public class AuthController {
 				jwt.setHttpOnly(true);
 				jwt.setPath("/");
 				response.addCookie(jwt);
+				userModel = userService.findByEmailAfterLogin(user.getEmail());
 			} else {
 				httpStatus = HttpStatus.BAD_REQUEST;
 			}
@@ -127,7 +128,7 @@ public class AuthController {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
 
-		return new ResponseEntity<String>(httpStatus);
+		return new ResponseEntity<Object>(userModel,httpStatus);
 	}
 
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
