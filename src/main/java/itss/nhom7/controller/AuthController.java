@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
 import itss.nhom7.entities.User;
 import itss.nhom7.jwt.JwtService;
 import itss.nhom7.model.UserModel;
@@ -106,6 +109,7 @@ public class AuthController {
 	}
 
 	@PostMapping(value = "/login", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	public ResponseEntity<Object> login(User user, HttpServletResponse response, HttpServletRequest request) {
 		String result = "";
 		HttpStatus httpStatus = null;

@@ -1,6 +1,7 @@
 package itss.nhom7.filter_handler;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,21 +40,28 @@ public class JwtAuthenticationTokenFilter extends UsernamePasswordAuthentication
 			
 			String email = jwtService.getEmailToken(authToken);
 			
-			itss.nhom7.entities.User user = userService.findByEmail(email);
-			
-			if(user!=null) {
+			itss.nhom7.entities.User user;
+			try {
+				user = userService.findByEmail(email);
+				if(user!=null) {
+					
+					boolean enable = true;
+					boolean accountNonExpired = true;
+					boolean credentialsNonExpired = true;
+					UserDetails userDetail = new User(email, user.getPassword(),enable,accountNonExpired,credentialsNonExpired,accountNonExpired, user.getAuthorities());
 				
-				boolean enable = true;
-				boolean accountNonExpired = true;
-				boolean credentialsNonExpired = true;
-				UserDetails userDetail = new User(email, user.getPassword(),enable,accountNonExpired,credentialsNonExpired,accountNonExpired, user.getAuthorities());
-			
+					
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetail, null,userDetail.getAuthorities());
+					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpRequest));
+					SecurityContextHolder.getContext().setAuthentication(authentication);
 				
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetail, null,userDetail.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpRequest));
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-			
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+			
+			
 			
 		}
 		
