@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.GrantedAuthority;
@@ -62,8 +61,8 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public HttpStatus addUser(UserModel userModel) throws SQLException {
-		HttpStatus status = null;
+	public UserModel addUser(UserModel userModel) throws SQLException {
+		
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
@@ -78,15 +77,20 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setCreatedAt(Calendar.getInstance());
 
 				userDao.saveAndFlush(user);
-				status = HttpStatus.OK;
-			}else {
-				status=HttpStatus.CREATED;
 			}
 		}catch (Exception e) {
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
 		}
-			return status;
+		
+		User userTmp = userDao.findByEmail(userModel.getEmail());
+		UserModel userReturn = new UserModel();
+		userReturn.setEmail(userTmp.getEmail());
+		userReturn.setFullName(userTmp.getFullName());
+		userReturn.setDateOfBirth(userTmp.getDateOfBirth());
+		userReturn.setAvataUrl(userTmp.getAvataUrl());
+		userReturn.setRole(userTmp.getRole());
+		userReturn.setPhone(userTmp.getPhone());
+			return userReturn;
 		
 		
 
