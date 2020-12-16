@@ -2,10 +2,9 @@ package itss.nhom7.entities;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,9 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -42,9 +39,6 @@ public class User implements Serializable{
 	@Column(unique=true,name="email")
 	private String email;
 	
-	@Column(name="username")
-	private String userName;
-	
 	@Column(name="full_name")
 	private String fullName;
 	
@@ -54,8 +48,8 @@ public class User implements Serializable{
 	@Column(name="password")
 	private String password;
 	
-	@Column(name="address")
-	private String address;
+	@Column(name="sex")
+	private String sex;
 	
 	@Column(name="phone")
 	private String phone;
@@ -66,17 +60,11 @@ public class User implements Serializable{
 	@Column(name="active")
 	private boolean active;
 	
-	
-	@Column(name="remember_token")
-	private String rememberToken;
-	
 	@Column(name="created_at")
-	private Date createdAt;
+	private Calendar createdAt;
 	
-	@OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-	@EqualsAndHashCode.Exclude
-    @ToString.Exclude
-	private List<Cart> carts = new ArrayList<>();
+	@Column(name="date_of_birth")
+	private Calendar dateOfBirth;
 	
 	@OneToMany(mappedBy = "user")
 	private List<Order> orders = new ArrayList<>();

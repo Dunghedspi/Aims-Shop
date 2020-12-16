@@ -1,7 +1,7 @@
 package itss.nhom7.entities;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -44,7 +44,7 @@ public class Order {
 	private int status;
 	
 	@Column(name="created_at")
-	private Date createdAt;
+	private Calendar createdAt;
 	
 	@ManyToOne
 	@JoinColumn(name="user_id")

@@ -10,8 +10,6 @@ import itss.nhom7.entities.User;
 @Repository
 public interface IUserDAO extends JpaRepository<User, Integer>  {
 	
-	User findByUserName(String username);
-	
 	User findByEmail(String email);
 	
 

@@ -1,6 +1,6 @@
 package itss.nhom7.entities;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,7 +33,7 @@ public class ProductPriceAudit {
 	private int priceBefore;
 	
 	@Column(name="created_at")
-	private Date createdAt;
+	private Calendar createdAt;
 
 	@ManyToOne
 	@JoinColumn(name="product_id")

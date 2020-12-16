@@ -1,15 +1,25 @@
 package itss.nhom7.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import itss.nhom7.dao.ICartDAO;
+import itss.nhom7.dao.ICategoryDAO;
+import itss.nhom7.dao.IOrderDetailDAO;
 import itss.nhom7.dao.IProductDAO;
+import itss.nhom7.entities.Cart;
 import itss.nhom7.entities.Product;
 import itss.nhom7.model.BookPhysicalModel;
 import itss.nhom7.model.CDPhysicalModel;
+import itss.nhom7.model.CartDetailModel;
 import itss.nhom7.model.DVDPhysicalModel;
 import itss.nhom7.model.LPPhysicalModel;
+import itss.nhom7.model.MediaModel;
+import itss.nhom7.model.ProductOrderQuantityCount;
 import itss.nhom7.service.IProductService;
 
 @Service
@@ -17,32 +27,138 @@ public class ProductService implements IProductService{
 	
 	@Autowired
 	private ModelMapper modelMapper;
-	
 	@Autowired
 	private IProductDAO productDao;
-
+	@Autowired
+	private IOrderDetailDAO orderDetailDao;
+	@Autowired
+	private ICartDAO cartDao;
+	@Autowired
+	private ICategoryDAO categoryDao;
+	
 	@Override
-	public void editProduct(Product product, String category) {
-		
-		
-		if(category.equals("bookPhy")) {
-			editBookPhy(modelMapper.map(product, BookPhysicalModel.class));
-		}else if(category.equals("cdPhy")) {
-			editCDPhy(modelMapper.map(product, CDPhysicalModel.class));
-		}else if(category.equals("dvdPhy")) {
-			editDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
-		}else if(category.equals("lpPhy")) {
-			editLPPhy(modelMapper.map(product, LPPhysicalModel.class));
+	public void addProduct(Product product, String code) {
+		Product productAdd = new Product();
+		if(code.equals("bookPhy")) {
+			productAdd=mapBookPhy(modelMapper.map(product, BookPhysicalModel.class));
+		}else if(code.equals("cdPhy")) {
+			productAdd=mapCDPhy(modelMapper.map(product, CDPhysicalModel.class));
+		}else if(code.equals("dvdPhy")) {
+			productAdd=mapDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
+		}else if(code.equals("lpPhy")) {
+			productAdd=mapLPPhy(modelMapper.map(product, LPPhysicalModel.class));
 		}else {
 			System.out.println("Edit failed");
 		}
+		productAdd.setCategory(categoryDao.findCateoryByCode(code));
+		productAdd.setDelete(false);
+		productDao.save(productAdd);
 		
 	}
 
-
-	private void editDVDPhy(DVDPhysicalModel dvd) {
+	@Override
+	public void editProduct(Product product, String category) {
+		Product productEdit = new Product();
 		
-		Product product = productDao.getOne(dvd.getId());
+		if(category.equals("bookPhy")) {
+			productEdit = mapBookPhy(modelMapper.map(product, BookPhysicalModel.class));
+		}else if(category.equals("cdPhy")) {
+			productEdit = mapCDPhy(modelMapper.map(product, CDPhysicalModel.class));
+		}else if(category.equals("dvdPhy")) {
+			productEdit = mapDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
+		}else if(category.equals("lpPhy")) {
+			productEdit = mapLPPhy(modelMapper.map(product, LPPhysicalModel.class));
+		}else {
+			System.out.println("Edit failed");
+		}
+		productEdit.setId(productDao.getOne(product.getId()).getId());
+		productEdit.setCategory(productDao.getOne(product.getId()).getCategory());
+		productDao.saveAndFlush(productEdit);
+	}
+
+
+	@Override
+	public void deleteProduct(int id) {
+		productDao.deleteById(id);
+	}
+
+
+
+	@Override
+	public List<MediaModel> getListProductTrending() {
+		List<ProductOrderQuantityCount> productOrderQuantityCounts = orderDetailDao.countTotalProductOrderQuantity();
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		for(ProductOrderQuantityCount productOrderQuantityCount : productOrderQuantityCounts) {
+			MediaModel mediaModel = new MediaModel();
+			mediaModel = getMediaModelById(productOrderQuantityCount.getId());
+			mediaModels.add(mediaModel);
+		}
+		return mediaModels;
+	}
+
+
+	@Override
+	public MediaModel getMediaModelById(int id) {
+		Product product = productDao.getOne(id);
+		MediaModel mediaModel = new MediaModel();
+		mediaModel.setId(product.getId());
+		mediaModel.setName(product.getName());
+		mediaModel.setPrice(product.getPrice());
+		mediaModel.setQuantity(product.getQuantity());
+		return mediaModel;
+	}
+
+
+	@Override
+	public List<MediaModel> getListProductByTokenUser(String tokenUser) {
+		Cart cart = cartDao.findByTokenUser(tokenUser);
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		if(cart!=null) {
+			CartDetailService cartDetailService = new CartDetailService();
+			for(CartDetailModel cartDetailModel : cartDetailService.findByCartId(cart.getId())) {
+				MediaModel mediaModel = new MediaModel();
+				Product product = productDao.getOne(cartDetailModel.getProductId());
+				mediaModel.setId(product.getId());
+				mediaModel.setName(product.getName());
+				mediaModel.setPrice(product.getPrice());
+				mediaModel.setValue(product.getValue());
+				mediaModel.setQuantity(cartDetailModel.getQuantity());
+				
+				mediaModels.add(mediaModel);
+			}
+		}
+		
+		return mediaModels;
+	}
+
+
+	@Override
+	public List<MediaModel> getListProductByName(String nameProduct) {
+		List<Product> products = productDao.getListProductByNameContaining(nameProduct);
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		for(Product product : products) {
+			MediaModel mediaModel = new MediaModel();
+			mediaModel = getMediaModelById(product.getId());
+			mediaModels.add(mediaModel);
+		}
+		return mediaModels;
+	}
+	private Product mapLPPhy(LPPhysicalModel lp) {
+		Product product = new Product();
+		product.setName(lp.getName());
+		product.setPrice(lp.getPrice());
+		product.setValue(lp.getValue());
+		product.setQuantity(lp.getQuantity());
+		product.setArtists(lp.getArtists());
+		product.setTracklist(lp.getArtists());
+		product.setType(lp.getType());
+		product.setInputDate(lp.getInputDate());
+		return product;
+		
+	}
+
+	private Product mapDVDPhy(DVDPhysicalModel dvd) {
+		Product product = new Product();
 		product.setName(dvd.getName());
 		product.setPrice(dvd.getPrice());
 		product.setValue(dvd.getValue());
@@ -54,31 +170,12 @@ public class ProductService implements IProductService{
 		product.setLanguage(dvd.getLanguage());
 		product.setAuthor(dvd.getAuthor());
 		
-		productDao.save(product);
-		
+		return product;
 		
 	}
 
-
-	private void editLPPhy(LPPhysicalModel lp) {
-		
-		Product product = productDao.getOne(lp.getId());
-		product.setName(lp.getName());
-		product.setPrice(lp.getPrice());
-		product.setValue(lp.getValue());
-		product.setQuantity(lp.getQuantity());
-		product.setArtists(lp.getArtists());
-		product.setTracklist(lp.getArtists());
-		product.setType(lp.getType());
-		product.setInputDate(lp.getInputDate());
-		
-		productDao.save(product);
-	}
-
-
-	private void editCDPhy(CDPhysicalModel cd) {
-		
-		Product product = productDao.getOne(cd.getId());
+	private Product mapCDPhy(CDPhysicalModel cd) {
+		Product product = new Product();
 		product.setName(cd.getName());
 		product.setPrice(cd.getPrice());
 		product.setValue(cd.getValue());
@@ -88,13 +185,12 @@ public class ProductService implements IProductService{
 		product.setType(cd.getType());
 		product.setInputDate(cd.getInputDate());
 		
-		productDao.save(product);
+		return product;
 		
 	}
 
-	private void editBookPhy(BookPhysicalModel book) {
-		
-		Product product = productDao.getOne(book.getId());
+	private Product mapBookPhy(BookPhysicalModel book) {
+		Product product = new Product();
 		product.setName(book.getName());
 		product.setPrice(book.getPrice());
 		product.setValue(book.getValue());
@@ -108,17 +204,19 @@ public class ProductService implements IProductService{
 		product.setLanguage(book.getLanguage());
 		product.setType(book.getType());
 		
-		productDao.save(product);
-		
+		return product;
 	}
-
 
 	@Override
-	public void deleteProduct(int id) {
-		
-		productDao.deleteById(id);
-		
-		
-	}
+	public List<MediaModel> getListProductByCategory(String code) {
+		List<Product> products = productDao.getListProductCode(code);
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		for(Product product : products) {
+			MediaModel mediaModel = new MediaModel();
+			mediaModel = getMediaModelById(product.getId());
+			mediaModels.add(mediaModel);
+		}
+		return mediaModels;
+	}	
 
 }
