@@ -1,13 +1,15 @@
 package itss.nhom7.controller;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,9 +31,9 @@ import itss.nhom7.service.impl.CartService;
 import itss.nhom7.service.impl.UserService;
 
 @RestController
-@RequestMapping(value = "/api/home")
+@RequestMapping(value = "/api/auth")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-public class HomeController {
+public class AuthController {
 	@Autowired
 	private UserService userService;
 
@@ -41,14 +43,27 @@ public class HomeController {
 	@Autowired
 	private CartService cartService;
 
-	@RequestMapping(value = "/home")
+	@RequestMapping(value = "/createUserToken")
 	public ResponseEntity<Object> home(HttpServletResponse response, HttpServletRequest request) {
 
 		Cookie[] cookies = request.getCookies();
 		String tokenUser = null;
+		String myDate = "1970/01/01 00:00:01";
+		LocalDateTime localDateTime = LocalDateTime.parse(myDate,
+		    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss") );
+		/*
+		  With this new Date/Time API, when using a date, you need to
+		  specify the Zone where the date/time will be used. For your case,
+		  seems that you want/need to use the default zone of your system.
+		  Check which zone you need to use for specific behaviour e.g.
+		  CET or America/Lima
+		*/
+		long millis = localDateTime
+		    .atZone(ZoneId.systemDefault())
+		    .toInstant().toEpochMilli();
 		int flag = 0;
 		if (cookies == null) {
-			response = userService.createCookie(RandomStringUtils.randomAlphanumeric(8), response);
+			response = userService.createCookie(Long.toString(millis), response);
 		} else {
 			for (Cookie cookie : cookies) {
 				if (cookie.getName().equals("tokenUser")) {
@@ -70,7 +85,7 @@ public class HomeController {
 				}
 			}
 			if (flag == 0) {
-				response = userService.createCookie(RandomStringUtils.randomAlphanumeric(8), response);
+				response = userService.createCookie(Long.toString(millis), response);
 			}
 		}
 
@@ -78,15 +93,17 @@ public class HomeController {
 	}
 
 	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<String> createUser(UserModel userModel) {
+	public ResponseEntity<Object> createUser(UserModel userModel) {
 		HttpStatus httpStatus = null;
+		UserModel userReturn = new UserModel();
 		try {
-			httpStatus = userService.addUser(userModel);
+			userModel.setRole("ROLE_USER");
+			userReturn = userService.addUser(userModel);
 		} catch (SQLException e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			e.printStackTrace();
 		}
-		return new ResponseEntity<String>(httpStatus);
+		return new ResponseEntity<Object>(userReturn,httpStatus);
 	}
 
 	@PostMapping(value = "/login", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)

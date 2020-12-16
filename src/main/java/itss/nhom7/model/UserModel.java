@@ -1,5 +1,6 @@
 package itss.nhom7.model;
 
+import java.time.LocalDate;
 import java.util.Calendar;
 
 import itss.nhom7.form.CustomerForm;
@@ -23,7 +24,7 @@ public class UserModel {
     private String role;
     private String sex;
     private Calendar createdAt;
-    private Calendar dateOfBirth;
+    private LocalDate dateOfBirth;
    
  
     private boolean active;

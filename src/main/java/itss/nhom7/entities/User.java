@@ -1,6 +1,7 @@
 package itss.nhom7.entities;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -64,7 +65,7 @@ public class User implements Serializable{
 	private Calendar createdAt;
 	
 	@Column(name="date_of_birth")
-	private Calendar dateOfBirth;
+	private LocalDate dateOfBirth;
 	
 	@OneToMany(mappedBy = "user")
 	private List<Order> orders = new ArrayList<>();
