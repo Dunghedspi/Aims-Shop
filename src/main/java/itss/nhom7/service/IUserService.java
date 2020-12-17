@@ -13,7 +13,7 @@ import itss.nhom7.model.UserModel;
 
 public interface IUserService {
 
-	boolean checkLogin(User user,Cookie[] cookies);								//kiem tra email va password khi login
+	boolean checkLogin(User user);								//kiem tra email va password khi login
 	HttpStatus addUser(UserModel userModel) throws SQLException;				//Them nguoi dung (khi dang ki)
 	User findByEmail(String email) throws SQLException;	//Tim kiem nguoi dung bang email(khi admin thay mat khau cho nguoi dung)
 	UserModel findByEmailAfterLogin(String email) throws SQLException;	

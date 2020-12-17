@@ -1,15 +1,11 @@
 package itss.nhom7.controller;
 
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import itss.nhom7.entities.User;
+import itss.nhom7.helper.Utils;
+import itss.nhom7.jwt.JwtService;
+import itss.nhom7.model.UserModel;
+import itss.nhom7.service.impl.CartService;
+import itss.nhom7.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,21 +13,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import itss.nhom7.entities.User;
 import itss.nhom7.jwt.JwtService;
 import itss.nhom7.model.UserModel;
-import itss.nhom7.service.impl.CartService;
-import itss.nhom7.service.impl.UserService;
 
 @RestController
 @RequestMapping(value = "/api/auth")
@@ -45,53 +39,19 @@ public class AuthController {
 
 	@Autowired
 	private CartService cartService;
+	@Autowired
+	private Utils utils;
 
 	@RequestMapping(value = "/createUserToken")
 	public ResponseEntity<Object> home(HttpServletResponse response, HttpServletRequest request) {
-
-		Cookie[] cookies = request.getCookies();
-		String tokenUser = null;
-		String myDate = "1970/01/01 00:00:01";
-		LocalDateTime localDateTime = LocalDateTime.parse(myDate,
-		    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss") );
-		/*
-		  With this new Date/Time API, when using a date, you need to
-		  specify the Zone where the date/time will be used. For your case,
-		  seems that you want/need to use the default zone of your system.
-		  Check which zone you need to use for specific behaviour e.g.
-		  CET or America/Lima
-		*/
-		long millis = localDateTime
-		    .atZone(ZoneId.systemDefault())
-		    .toInstant().toEpochMilli();
-		int flag = 0;
-		if (cookies == null) {
-			response = userService.createCookie(Long.toString(millis), response);
-		} else {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("tokenUser")) {
-					tokenUser = cookie.getValue();
-					if (cartService.findByTokenUser(tokenUser).getTokenUser() != null) {
-						Calendar expired = cartService.findByTokenUser(tokenUser).getCreatedAt();
-						if (expired.before(Calendar.getInstance())) {
-							try {
-								userService.updateExpired(tokenUser);
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
-						}
-					} else {
-						response = userService.createCookie(tokenUser, response);
-					}
-					flag++;
-					break;
-				}
-			}
-			if (flag == 0) {
-				response = userService.createCookie(Long.toString(millis), response);
-			}
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		Cookie userToken = utils.getCookie(request, "userToken");
+		if (null == userToken) {
+			String token = String.valueOf(timestamp.getTime());
+			userToken = utils.createCookie("userToken", token, false, (long) 3600);
+			cartService.addTokenUser(token);
+			response.addCookie(userToken);
 		}
-
 		return new ResponseEntity<Object>("Access successfully!", HttpStatus.OK);
 	}
 
@@ -109,24 +69,23 @@ public class AuthController {
 		return new ResponseEntity<String>(httpStatus);
 	}
 
-	@PostMapping(value = "/login", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	@JsonSerialize(using = LocalDateTimeSerializer.class)
+	@PostMapping(value = "/login", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
 	public ResponseEntity<Object> login(User user, HttpServletResponse response, HttpServletRequest request) {
-		String result = "";
-		HttpStatus httpStatus = null;
-		UserModel userModel = new UserModel();
-		Cookie[] cookies = request.getCookies();
+		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+		UserModel userModel = null;
 		try {
-			if (userService.checkLogin(user, cookies)) {
-				result = jwtService.generateTokenLogin(user.getEmail());
-				httpStatus = HttpStatus.OK;
-				Cookie jwt = new Cookie("Authorization", result);
-				jwt.setHttpOnly(true);
-				jwt.setPath("/");
-				response.addCookie(jwt);
+			if (userService.checkLogin(user)) {
+				String result = jwtService.generateTokenLogin(user.getEmail());
+				Cookie jwt = utils.createCookie("Authorization", result, true, (long) 3600);
+
+				Cookie cookie = utils.getCookie(request, "userToken");
 				userModel = userService.findByEmailAfterLogin(user.getEmail());
-			} else {
-				httpStatus = HttpStatus.BAD_REQUEST;
+				if (null != cookie) {
+					cartService.updateUserId(cookie.getValue(), userModel.getId());
+				}
+
+				response.addCookie(jwt);
+				httpStatus = HttpStatus.OK;
 			}
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
@@ -139,38 +98,26 @@ public class AuthController {
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
 	public ResponseEntity<String> logoutPage(HttpServletRequest request, HttpServletResponse response) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-		HttpStatus httpStatus = null;
-		//String result = "error";
+		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
 		if (auth != null) {
-			Cookie[] cookies = request.getCookies();
-			for(Cookie cookie : cookies) {
-				if(cookie.getName().equals("Authorization")) {
-					cookie.setMaxAge(0);
-					cookie.setValue(null);
-				}
-			}
+			Cookie jwt = utils.deleteCookie(request, "Authentication");
+			Cookie userToken = utils.deleteCookie(request, "userToken");
+			response.addCookie(jwt);
+			response.addCookie(userToken);
 			new SecurityContextLogoutHandler().logout(request, response, auth);
 			httpStatus = HttpStatus.OK;
-			//result = "ok";
 		}
-		assert httpStatus != null;
 		return new ResponseEntity<String>(httpStatus);
 	}
 	
 	@PutMapping(value = "/applyNewPassword",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public ResponseEntity<String> applyNewPassword(User user) {
-		
 		if(userService.findByEmail(user.getEmail())!=null) {
 			userService.applyNewPassword(user);
 			return new ResponseEntity<String>(HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 		}
-
-		
-
-		
 	}
 
 }
