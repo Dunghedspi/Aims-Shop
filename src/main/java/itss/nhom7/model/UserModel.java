@@ -1,9 +1,7 @@
 package itss.nhom7.model;
 
-import java.time.LocalDate;
 import java.util.Calendar;
 
-import itss.nhom7.form.CustomerForm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,24 +15,26 @@ public class UserModel {
 	private int id;
     private String fullName;
     private String avataUrl;
-    private String address;
     private String email;
     private String password;
     private String phone;
     private String role;
     private String sex;
     private Calendar createdAt;
-    private LocalDate dateOfBirth;
-   
- 
+    private String dateOfBirth;
+    private String country;
+    private String province;
+	private String district;
+	private String village;
+	private String street;
     private boolean active;
  
  
-    public UserModel(CustomerForm customerForm) {
-        this.fullName = customerForm.getFullName();
-        this.address = customerForm.getAddress();
-        this.email = customerForm.getEmail();
-        this.phone = customerForm.getPhone();
-        this.active = customerForm.isActive();
-    }
+//    public UserModel(CustomerForm customerForm) {
+//        this.fullName = customerForm.getFullName();
+//        this.address = customerForm.getAddress();
+//        this.email = customerForm.getEmail();
+//        this.phone = customerForm.getPhone();
+//        this.active = customerForm.isActive();
+//    }
 }

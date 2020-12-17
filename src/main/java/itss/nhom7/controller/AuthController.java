@@ -20,6 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import itss.nhom7.entities.User;
+import itss.nhom7.jwt.JwtService;
+import itss.nhom7.model.UserModel;
 
 @RestController
 @RequestMapping(value = "/api/auth")
@@ -49,7 +55,8 @@ public class AuthController {
 		return new ResponseEntity<Object>("Access successfully!", HttpStatus.OK);
 	}
 
-	@PostMapping(value = "/register", produces = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	public ResponseEntity<String> createUser(UserModel userModel) {
 		HttpStatus httpStatus = null;
 		try {
