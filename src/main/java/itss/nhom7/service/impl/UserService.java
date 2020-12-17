@@ -1,13 +1,9 @@
 package itss.nhom7.service.impl;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
+import itss.nhom7.dao.IUserDAO;
+import itss.nhom7.entities.User;
+import itss.nhom7.model.UserModel;
+import itss.nhom7.service.IUserService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +17,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import itss.nhom7.dao.IUserDAO;
-import itss.nhom7.entities.User;
-import itss.nhom7.model.CartModel;
-import itss.nhom7.model.UserModel;
-import itss.nhom7.service.IUserService;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -40,18 +37,13 @@ public class UserService implements IUserService, UserDetailsService {
 	private ModelMapper modelMapper;
 
 	@Override
-	public boolean checkLogin(User user,Cookie[] cookies) {
+	public boolean checkLogin(User user) {
 		User userfind = userDao.findByEmail(user.getEmail());
-		if (userfind == null) {
-			return false;
-		} else {
-			if (user.getPassword().equals(userfind.getPassword())) {
-				updateUserId(cookies, userfind.getId());
-				return true;
-			} else {
-				return false;
-			}
+		boolean isCheck = false;
+		if ((null != userfind) && userfind.getPassword().equals(user.getPassword())) {
+			isCheck = true;
 		}
+		return isCheck;
 	}
 
 	@Override
@@ -67,13 +59,13 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setEmail(userModel.getEmail());
 				user.setPassword(userModel.getPassword());
 				user.setPhone(userModel.getPhone());
-				user.setRole(userModel.getRole());
+				user.setRole(String.valueOf(1));
 				user.setCreatedAt(Calendar.getInstance());
 
 				userDao.saveAndFlush(user);
 				status = HttpStatus.OK;
-			}else {
-				status=HttpStatus.CREATED;
+			} else {
+				status = HttpStatus.CREATED;
 			}
 		}catch (Exception e) {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -154,33 +146,27 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public HttpServletResponse createCookie(String tokenUser,HttpServletResponse response) {
-		Cookie cookie = new Cookie("tokenUser",tokenUser);
-		cookie.setHttpOnly(true);
+	public HttpServletResponse createCookie(String tokenUser, HttpServletResponse response) {
+		Cookie cookie = new Cookie("tokenUser", tokenUser);
 		cookie.setPath("/");
 		response.addCookie(cookie);
-		
+		cookie.setMaxAge(60 * 60 * 60);
 		cartService.addTokenUser(tokenUser);
 		return response;
 	}
-	
-	private void updateUserId(Cookie[] cookies, int userId) {
-		CartModel cartModel = cartService.findByUserId(userId);
-		if(cartModel.getUserId()==0) {
-			for(Cookie cookie : cookies) {
-				if(cookie.getName().equals("tokenUser")) {
-					String tokenUser = cookie.getValue();
-					cartService.updateUserId(tokenUser, userId);
-					break;
-				}
-			}
+
+	private void updateUserId(String tokenUser, int userId) {
+		try {
+			cartService.updateUserId(tokenUser, userId);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
 
 	@Override
 	public void blockUser(int id) {
 		User user = userDao.getOne(id);
-		if(user != null) {
+		if (user != null) {
 			user.setActive(false);
 			userDao.saveAndFlush(user);
 		}
@@ -196,6 +182,7 @@ public class UserService implements IUserService, UserDetailsService {
 		userReturn.setAvataUrl(userTmp.getAvataUrl());
 		userReturn.setRole(userTmp.getRole());
 		userReturn.setPhone(userTmp.getPhone());
+		userReturn.setId(userTmp.getId());
 		return userReturn;
 	}
 

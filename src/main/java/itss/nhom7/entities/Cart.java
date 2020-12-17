@@ -59,6 +59,4 @@ public class Cart implements Serializable{
     )
 	
 	private List<Product> products = new ArrayList<>();
-
-
 }

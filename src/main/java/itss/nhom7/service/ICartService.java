@@ -13,5 +13,6 @@ public interface ICartService {
 	CartModel findByTokenUser(String tokenUser) throws SQLException;							//tim gio hang theo tokenUser 
 	void updateExpired(String tokenUser) throws SQLException;									//Cap nhat han dung cua tokenUser
 	void updateUserId(String tokenUser,int id) throws SQLException;								//Them userId theo tokenUser vao db
-	CartModel findByUserId(int id) throws SQLException;											//Lay thong tin gio hang theo userId
+	CartModel findByUserId(int id) throws SQLException;//Lay thong tin gio hang theo userId
+	void deleteCart(int id) throws  SQLException;
 }

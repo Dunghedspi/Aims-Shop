@@ -16,7 +16,6 @@ public class Aims1Application {
 	
 	@Bean
 	public ModelMapper modelMapper() {
-		
 		return new ModelMapper();
 	}
 
