@@ -1,5 +1,7 @@
 package itss.nhom7.controller;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import itss.nhom7.entities.User;
 import itss.nhom7.helper.Utils;
 import itss.nhom7.jwt.JwtService;
@@ -20,12 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
-import itss.nhom7.entities.User;
-import itss.nhom7.jwt.JwtService;
-import itss.nhom7.model.UserModel;
 
 @RestController
 @RequestMapping(value = "/api/auth")
@@ -58,12 +54,13 @@ public class AuthController {
 	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	public ResponseEntity<String> createUser(UserModel userModel) {
-		HttpStatus httpStatus = null;
+		HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 		try {
 			userModel.setRole("ROLE_USER");
-			httpStatus = userService.addUser(userModel);
+			if (userService.addUser(userModel)) {
+				httpStatus = HttpStatus.CREATED;
+			}
 		} catch (SQLException e) {
-			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			e.printStackTrace();
 		}
 		return new ResponseEntity<String>(httpStatus);
@@ -99,23 +96,23 @@ public class AuthController {
 	public ResponseEntity<String> logoutPage(HttpServletRequest request, HttpServletResponse response) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-		if (auth != null) {
-			Cookie jwt = utils.deleteCookie(request, "Authentication");
-			Cookie userToken = utils.deleteCookie(request, "userToken");
-			response.addCookie(jwt);
-			response.addCookie(userToken);
-			new SecurityContextLogoutHandler().logout(request, response, auth);
-			httpStatus = HttpStatus.OK;
-		}
+//		if (auth != null) {
+		Cookie userToken = utils.createCookie("userToken", null, false, (long) 0);
+		response.addCookie(userToken);
+		Cookie jwt = utils.createCookie("Authorization", null, true, (long) 0);
+		response.addCookie(jwt);
+		new SecurityContextLogoutHandler().logout(request, response, auth);
+		httpStatus = HttpStatus.OK;
+		//}
 		return new ResponseEntity<String>(httpStatus);
 	}
-	
-	@PutMapping(value = "/applyNewPassword",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+
+	@PutMapping(value = "/applyNewPassword", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public ResponseEntity<String> applyNewPassword(User user) {
-		if(userService.findByEmail(user.getEmail())!=null) {
+		if (userService.findByEmail(user.getEmail()) != null) {
 			userService.applyNewPassword(user);
 			return new ResponseEntity<String>(HttpStatus.OK);
-		}else {
+		} else {
 			return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 		}
 	}
