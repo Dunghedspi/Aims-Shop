@@ -6,10 +6,7 @@ import itss.nhom7.service.IUserService;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -26,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.entities.Address;
 import itss.nhom7.model.CartModel;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -52,8 +50,8 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public HttpStatus addUser(UserModel userModel) throws SQLException {
-		HttpStatus status = null;
+	public boolean addUser(UserModel userModel) throws SQLException {
+		boolean isCreated = false;
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
@@ -66,26 +64,14 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
 				user.setCreatedAt(Calendar.getInstance());
-				
-				Address address = new Address();
-				address.setCountry(userModel.getCountry());
-				address.setProvince(userModel.getProvince());
-				address.setDistrict(userModel.getDistrict());
-				address.setVillage(userModel.getVillage());
-				address.setStreet(userModel.getStreet());
-				addressDao.save(address);
-				
-				user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(), userModel.getVillage(), userModel.getStreet()));
+				user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
 				userDao.saveAndFlush(user);
-				status = HttpStatus.OK;
-			} else {
-				status = HttpStatus.CREATED;
+				isCreated = true;
 			}
 		}catch (Exception e) {
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
 		}
-			return status;
+			return isCreated;
 	}
 
 	@Override
@@ -159,17 +145,6 @@ public class UserService implements IUserService, UserDetailsService {
 	public void updateExpired(String tokenUser) throws SQLException {
 		cartService.updateExpired(tokenUser);
 	}
-
-	@Override
-	public HttpServletResponse createCookie(String tokenUser, HttpServletResponse response) {
-		Cookie cookie = new Cookie("tokenUser", tokenUser);
-		cookie.setPath("/");
-		response.addCookie(cookie);
-		cookie.setMaxAge(60 * 60 * 60);
-		cartService.addTokenUser(tokenUser);
-		return response;
-	}
-
 	private void updateUserId(String tokenUser, int userId) {
 		try {
 			cartService.updateUserId(tokenUser, userId);
