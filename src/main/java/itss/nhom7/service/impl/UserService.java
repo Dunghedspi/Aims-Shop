@@ -1,8 +1,4 @@
 package itss.nhom7.service.impl;
-import itss.nhom7.dao.IUserDAO;
-import itss.nhom7.entities.User;
-import itss.nhom7.model.UserModel;
-import itss.nhom7.service.IUserService;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +21,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
 import itss.nhom7.dao.IAddressDAO;
+import itss.nhom7.dao.IUserDAO;
 import itss.nhom7.entities.Address;
-import itss.nhom7.model.CartModel;
+import itss.nhom7.entities.User;
+import itss.nhom7.model.UserModel;
+import itss.nhom7.service.IUserService;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -99,6 +102,7 @@ public class UserService implements IUserService, UserDetailsService {
 		List<GrantedAuthority> grantList = new ArrayList<GrantedAuthority>();
 		GrantedAuthority authority = new SimpleGrantedAuthority(role);
 		grantList.add(authority);
+		System.out.println("Role : " +role);
 		boolean enable = user.isActive();
 		boolean accountNonExpired = true;
 		boolean credentialsNonExpired = true;
@@ -170,13 +174,13 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 	}
 
-	private void updateUserId(String tokenUser, int userId) {
-		try {
-			cartService.updateUserId(tokenUser, userId);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
+//	private void updateUserId(String tokenUser, int userId) {
+//		try {
+//			cartService.updateUserId(tokenUser, userId);
+//		} catch (Exception e) {
+//			System.out.println(e.getMessage());
+//		}
+//	}
 
 	@Override
 	public void blockUser(int id) {

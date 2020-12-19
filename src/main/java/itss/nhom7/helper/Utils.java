@@ -41,4 +41,17 @@ public class Utils {
         }
         return cookie;
     }
+    
+    public boolean checkCookies(Cookie[] cookies) {
+    	if(cookies != null) {
+    		for(Cookie cookie : cookies) {
+    			if(cookie.getName().equals("Authorization")) {
+    				return true;
+    			}
+        	}
+    	}
+
+    	return false;
+    }
+    	
 }

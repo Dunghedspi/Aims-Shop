@@ -26,23 +26,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	UserService userService;
 	
 	@Bean
-	public BCryptPasswordEncoder passwordEncoder() {
-		
-		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-		return bCryptPasswordEncoder;
-	}
-	
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		
-		auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-	}
-	
-	@Bean
 	public JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter() throws Exception {
 
 		JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter = new JwtAuthenticationTokenFilter();
-		jwtAuthenticationTokenFilter.setAuthenticationManager(authenticationManager());
+		//jwtAuthenticationTokenFilter.setAuthenticationManager(authenticationManager());
 		return jwtAuthenticationTokenFilter;
 
 	}
@@ -66,39 +53,54 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		return super.authenticationManager();
 	}
 	
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		return bCryptPasswordEncoder;
+	}
+	
+	@Autowired
+	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+		
+		auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
+	}
+
+	
 	@Override
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
-//		http.csrf().disable();
+		httpSecurity.csrf().disable();
 //		
-//		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/users/*").permitAll();
+//		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/ROLE_USERs/*").permitAll();
 
-		httpSecurity.authorizeRequests().antMatchers("/api/home/**","/api/cart/**").permitAll();
+		httpSecurity.authorizeRequests().antMatchers("/api/auth/**","/api/cart/**").permitAll();
+		//httpSecurity.authorizeRequests().antMatchers("/api/user/getUser").access("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')");
 		
 		httpSecurity.csrf().ignoringAntMatchers("/api/**");
 		httpSecurity.antMatcher("/api/**")
 				.httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint()).and()
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()		
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.authorizeRequests()		
 				.antMatchers(HttpMethod.GET,"/api/card/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.POST,"/api/card/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.PUT,"/api/card/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.DELETE,"/api/card/**").access("hasRole('ROLE_USER')")
 				
-				.antMatchers(HttpMethod.GET,"/api/user/**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
-				//access("hasRole('ROLE_USER' or hasRole('ROLE_ADMIN')")
-				.antMatchers(HttpMethod.POST,"/api/user/addUser").access("hasRole('ROLE_USER')")
-				.antMatchers(HttpMethod.PUT,"/api/user/editUser").access("hasRole('ROLE_USER')")
-				.antMatchers(HttpMethod.PUT,"/api/user/blockUser/**").access("hasRole('ROLE_ADMIN')")
-				
+				.antMatchers(HttpMethod.GET,"/api/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.POST,"/api/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.PUT,"/api/user/**").access("hasRole('ROLE_USER')")
 				
 				.antMatchers(HttpMethod.GET,"/api/product/**").access("hasRole('ROLE_USER')")
 				
-				.antMatchers(HttpMethod.POST,"/api/product/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers(HttpMethod.PUT,"/api/product/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers(HttpMethod.DELETE,"/api/product/**").access("hasRole('ROLE_ADMIN')")
+				
+				.antMatchers(HttpMethod.POST,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers(HttpMethod.PUT,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers(HttpMethod.DELETE,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				
 				
 				.and()
+				//.csrf().disable()
 				.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling().accessDeniedHandler(customAccessDeniedHandler());
 	}
