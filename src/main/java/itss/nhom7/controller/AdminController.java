@@ -31,13 +31,15 @@ public class AdminController {
 	private ProductService productService;
 	
 	@PostMapping(value = "/registerAdmin", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<Object> createUser(UserModel userModel) {
-		HttpStatus httpStatus = null;
+	public ResponseEntity<String> createUser(UserModel userModel) {
+		HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 		try {
 			userModel.setRole("ROLE_ADMIN");
-			httpStatus = userService.addUser(userModel);
+			boolean isCreated = userService.addUser(userModel);
+			if(isCreated) {
+				httpStatus=HttpStatus.CREATED;
+			}
 		} catch (SQLException e) {
-			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			e.printStackTrace();
 		}
 		return new ResponseEntity<Object>(httpStatus);
