@@ -56,19 +56,5 @@ public class UserController {
 		userService.editUser(userModel);
 		return new ResponseEntity<Object>("Edit successfully!", HttpStatus.OK);
 	}
-	
-	
-	@PutMapping(value = "/blockUser/{idUser}")
-	public ResponseEntity<String> editUser(@PathVariable("idUser") int idUser) {
-		HttpStatus httpStatus = null;
-		try {
-			userService.blockUser(idUser);
-			httpStatus = HttpStatus.OK;
-		}catch(Exception e) {
-			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-			System.out.println(e);
-		}
-		return new ResponseEntity<String>(httpStatus);
-	}
 
 }

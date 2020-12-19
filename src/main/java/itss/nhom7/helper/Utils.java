@@ -29,4 +29,31 @@ public class Utils {
         }
         return cookie;
     }
+    public Cookie deleteCookie(HttpServletRequest request, String name) {
+        Cookie [] cookies = request.getCookies();
+        Cookie cookie = null;
+        if(cookies != null) {
+            for(Cookie c : cookies){
+                if(c.getName().equals(name)){
+                    c.setMaxAge(0);
+                    cookie = c;
+                }
+            }
+        }
+        return cookie;
+    }
+    
+    public boolean checkCookies(Cookie[] cookies) {
+    	if(cookies != null) {
+    		for(Cookie cookie : cookies) {
+    			if(cookie.getName().equals("Authorization")) {
+    				return true;
+    			}
+        	}
+    	}
+
+    	return false;
+    }
+    	
+
 }
