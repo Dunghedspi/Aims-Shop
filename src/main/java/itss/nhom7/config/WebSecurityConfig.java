@@ -31,14 +31,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter = new JwtAuthenticationTokenFilter();
 		//jwtAuthenticationTokenFilter.setAuthenticationManager(authenticationManager());
 		return jwtAuthenticationTokenFilter;
-
 	}
 
 	@Bean
 	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
-
 		return new RestAuthenticationEntryPoint();
-
 	}
 
 	@Bean
@@ -71,11 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
 		httpSecurity.csrf().disable();
-//		
-//		http.authorizeRequests().antMatchers("/aims/login","/aims/logout","/aims/editProduct/*","/aims/deleteProduct/*","/ROLE_USERs/*").permitAll();
-
 		httpSecurity.authorizeRequests().antMatchers("/api/auth/**","/api/cart/**").permitAll();
-		//httpSecurity.authorizeRequests().antMatchers("/api/user/getUser").access("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')");
 		
 		httpSecurity.csrf().ignoringAntMatchers("/api/**");
 		httpSecurity.antMatcher("/api/**")
@@ -93,14 +86,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 				
 				.antMatchers(HttpMethod.GET,"/api/product/**").access("hasRole('ROLE_USER')")
 				
+				.antMatchers(HttpMethod.GET,"/api/image/getImageAvatar/**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
+				.antMatchers(HttpMethod.POST,"/api/image/uploadImageAvatar/**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
+				.antMatchers(HttpMethod.GET,"/api/image/getImageProduct/**").permitAll()
+				.antMatchers(HttpMethod.POST,"/api/image/uploadImageProduct/**").access("ROLE_ADMIN")
 				
 				.antMatchers(HttpMethod.POST,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers(HttpMethod.PUT,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers(HttpMethod.DELETE,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				
-				
 				.and()
-				//.csrf().disable()
 				.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class)
 				.exceptionHandling().accessDeniedHandler(customAccessDeniedHandler());
 	}

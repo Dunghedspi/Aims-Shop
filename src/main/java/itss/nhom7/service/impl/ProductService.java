@@ -79,7 +79,11 @@ public class ProductService implements IProductService{
 
 	@Override
 	public void deleteProduct(int id) {
-		productDao.deleteById(id);
+		if(productDao.existsById(id)) {
+			Product product = productDao.getOne(id);
+			product.setDelete(true);
+			productDao.saveAndFlush(product);
+		}
 	}
 
 
