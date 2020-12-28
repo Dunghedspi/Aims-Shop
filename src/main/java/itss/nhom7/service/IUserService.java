@@ -19,7 +19,7 @@ public interface IUserService {
 	void applyNewPassword(User user) throws SQLException;						//Cap nhat mat khau cho nguoi dung va admin gui mail thong bao
 	void editUser(UserModel user) throws SQLException, ParseException;							//Thay doi thong tin nguoi dung(nguoi dung)
 	UserModel getUser(int id) throws SQLException;								//Lay thong tin nguoi dung (nguoi dung)
-	void blockUser(int id) throws SQLException;
+	void blockOrUnBlockUser(int id, boolean activity) throws SQLException;
 	void updateExpired(String tokenUser) throws SQLException;					//update han dung cho tokenUser
 	HttpServletResponse createCookie(String tokenUser,HttpServletResponse response);//Thiet lap cookie cho nguoi dung
 	//void updateUserId(Cookie[] cookies,int userId);

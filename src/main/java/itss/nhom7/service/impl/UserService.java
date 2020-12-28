@@ -23,7 +23,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.dao.IUserDAO;
+import itss.nhom7.entities.Address;
 import itss.nhom7.entities.User;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.IUserService;
@@ -33,6 +35,8 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private IUserDAO userDao;
+	@Autowired
+	private IAddressDAO addressDao;
 	@Autowired
 	private CartService cartService;
 	@Autowired
@@ -140,8 +144,31 @@ public class UserService implements IUserService, UserDetailsService {
 		Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth());
 		user.setDateOfBirth(dateOfBirth);
 		user.setPhone(userModel.getPhone());
+		
+		if(user.getAddress() == null) {
+			Address address = new Address();
+			address.setCountry(userModel.getCountry());
+			address.setProvince(userModel.getProvince());
+			address.setDistrict(userModel.getDistrict());
+			address.setVillage(userModel.getVillage());
+			address.setStreet(userModel.getStreet());
+			addressDao.save(address);
+			
+			user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(),
+													userModel.getVillage(), userModel.getStreet()));
+		}else {
+			Address address = user.getAddress();
+			address.setCountry(userModel.getCountry());
+			address.setProvince(userModel.getProvince());
+			address.setDistrict(userModel.getDistrict());
+			address.setVillage(userModel.getVillage());
+			address.setStreet(userModel.getStreet());
+			addressDao.saveAndFlush(address);
+			user.setAddress(address);
+		}
+		
 
-		userDao.save(user);
+		userDao.saveAndFlush(user);
 
 	}
 
@@ -179,11 +206,24 @@ public class UserService implements IUserService, UserDetailsService {
 //	}
 
 	@Override
-	public void blockUser(int id) {
+	public void blockOrUnBlockUser(int id,boolean activity) {
 		User user = userDao.getOne(id);
 		if (user != null) {
-			user.setActive(false);
+			user.setActive(activity);
 			userDao.saveAndFlush(user);
+			
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(user.getEmail());
+			if(activity) {
+				message.setSubject("Unblocked account");
+				message.setText("Hello, We are Aims!\n Admin unblocked your accoutn" );
+			}else {
+				message.setSubject("Blocked account");
+				message.setText("Hello, We are Aims!\n Admin blocked your accoutn" );
+			}
+			
+			// Send Message!
+			this.emailSender.send(message);
 		}
 	}
 

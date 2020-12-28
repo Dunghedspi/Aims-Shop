@@ -82,8 +82,22 @@ public class CartController {
 	
 	@PutMapping(value="/editCart",produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public ResponseEntity<Object> editCart(CartDetailModel cartDetailModel) {
-
-		return new ResponseEntity<Object>("Edit Cart Successfully!", HttpStatus.OK);
+		String result = null;
+		HttpStatus httpStatus = null;
+		try {
+			if(cartDetailService.editCartDetail(cartDetailModel)) {
+				result = "add Product To Cart Successfully!";
+			}else {
+				result = "so luong san pham trong gio lon hon trong kho";
+			}
+			httpStatus = HttpStatus.OK;
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		
+		
+		return new ResponseEntity<Object>(result, httpStatus);
 
 	}
 	

@@ -54,10 +54,23 @@ public class AdminController {
 	}
 	
 	@PutMapping(value = "/blockUser/{idUser}")
-	public ResponseEntity<Object> editUser(@PathVariable("idUser") int idUser) {
+	public ResponseEntity<Object> blockUser(@PathVariable("idUser") int idUser) {
 		HttpStatus httpStatus = null;
 		try {
-			userService.blockUser(idUser);
+			userService.blockOrUnBlockUser(idUser,true);
+			httpStatus = HttpStatus.OK;
+		}catch(Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<Object>(httpStatus);
+	}
+	
+	@PutMapping(value = "/unBlockUser/{idUser}")
+	public ResponseEntity<Object> unBlockUser(@PathVariable("idUser") int idUser) {
+		HttpStatus httpStatus = null;
+		try {
+			userService.blockOrUnBlockUser(idUser,false);
 			httpStatus = HttpStatus.OK;
 		}catch(Exception e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;

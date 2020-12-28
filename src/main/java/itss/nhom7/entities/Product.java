@@ -1,7 +1,7 @@
 package itss.nhom7.entities;
 
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -61,7 +61,7 @@ public class Product {
 	private String publisher;
 	
 	@Column(name="publication_date")
-	private Calendar publicationDate;
+	private Date publicationDate;
 	
 	@Column(name="pages")
 	private int pages;
@@ -71,6 +71,9 @@ public class Product {
 	
 	@Column(name="type")
 	private String type;
+	
+	@Column(name="barcode")
+	private String barcode;
 	
 	//cac thuoc tinh chung cho cd,lp
 	
@@ -92,7 +95,7 @@ public class Product {
 	private String description;
 	
 	@Column(name="input_date")
-	private Calendar inputDate;
+	private Date inputDate;
 	
 	@Column(name="weight")
 	private Double weight;
@@ -107,7 +110,10 @@ public class Product {
 	private String modifiedBy;
 	
 	@Column(name="modified_date")
-	private Calendar modifiedDate;
+	private Date modifiedDate;
+	
+	@Column(name="product_url")
+	private String productUrl;
 	
 	@ManyToOne
 	@JoinColumn(name="category_id")

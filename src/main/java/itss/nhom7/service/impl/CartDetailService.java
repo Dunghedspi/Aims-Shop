@@ -49,13 +49,16 @@ public class CartDetailService implements ICartDetailService{
 		
 	}
 	@Override
-	public void editCartDetail(CartDetailModel cartDetailModel) {
+	public boolean editCartDetail(CartDetailModel cartDetailModel) {
+		if(checkQuantity(cartDetailModel.getProductId(),cartDetailModel.getQuantity())) {
+			return false;
+		}
 		CartDetail cartDetail = cartDetailDao.getOne(cartDetailModel.getCartId());
 		cartDetail.setCartId(cartDetailModel.getCartId());
 		cartDetail.setProductId(cartDetailModel.getProductId());
 		cartDetail.setQuantity(cartDetailModel.getQuantity());
 		cartDetailDao.saveAndFlush(cartDetail);
-		
+		return true;
 	}
 	@Override
 	public void deleteProduct(CartDetailModel cartDetailModel) {
