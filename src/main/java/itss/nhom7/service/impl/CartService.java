@@ -99,8 +99,8 @@ public class CartService implements ICartService{
 		return cartModel;
 	}
 
-	public void deleteCartById(int user_id) throws SQLException {
-		Cart cart = cartDao.findByUserId(user_id);
+	public void deleteCartById(int userId) throws SQLException {
+		Cart cart = cartDao.findByUserId(userId);
 		if (null != cart) {
 			deleteCart(cart.getId());
 		}

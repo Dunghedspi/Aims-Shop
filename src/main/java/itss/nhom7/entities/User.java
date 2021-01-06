@@ -2,7 +2,6 @@ package itss.nhom7.entities;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -45,8 +44,8 @@ public class User implements Serializable{
 	@Column(name="full_name")
 	private String fullName;
 	
-	@Column(name="avata_url")
-	private String avataUrl;
+	@Column(name="image_url")
+	private String imageUrl;
 	
 	@Column(name="password")
 	private String password;
@@ -68,7 +67,10 @@ public class User implements Serializable{
 	private Address address;
 	
 	@Column(name="created_at")
-	private Calendar createdAt;
+	private Date createdAt;
+	
+	@Column(name="update_at")
+	private Date updateAt;
 	
 	@Column(name="date_of_birth")
 	private Date dateOfBirth;

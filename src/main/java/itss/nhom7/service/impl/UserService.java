@@ -3,7 +3,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.dao.IUserDAO;
@@ -63,22 +63,13 @@ public class UserService implements IUserService, UserDetailsService {
 				User user = new User();
 				user.setActive(true);
 				user.setFullName(userModel.getFullName());
-				user.setAvataUrl(userModel.getAvataUrl());
+				user.setImageUrl(userModel.getImageUrl());
 				user.setEmail(userModel.getEmail());
 				user.setPassword(userModel.getPassword());
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
-				user.setCreatedAt(Calendar.getInstance());
+				user.setCreatedAt(new Date());
 				
-//				Address address = new Address();
-//				address.setCountry(userModel.getCountry());
-//				address.setProvince(userModel.getProvince());
-//				address.setDistrict(userModel.getDistrict());
-//				address.setVillage(userModel.getVillage());
-//				address.setStreet(userModel.getStreet());
-//				addressDao.save(address);
-				
-				//user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(), userModel.getVillage(), userModel.getStreet()));
 				userDao.save(user);
 				status = HttpStatus.OK;
 			} else {
@@ -119,6 +110,7 @@ public class UserService implements IUserService, UserDetailsService {
 	public void applyNewPassword(User user) {
 
 		User userUpdate = userDao.findByEmail(user.getEmail());
+		
 		String passRandom = RandomStringUtils.randomAlphanumeric(8);
 
 		if (user.getEmail().equals(userUpdate.getEmail())) {
@@ -139,7 +131,7 @@ public class UserService implements IUserService, UserDetailsService {
 
 		User user = userDao.findByEmail(userModel.getEmail());
 		user.setFullName(userModel.getFullName());
-		user.setAvataUrl(userModel.getAvataUrl());
+		user.setImageUrl(userModel.getImageUrl());
 		user.setSex(userModel.getSex());
 		Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth());
 		user.setDateOfBirth(dateOfBirth);
@@ -197,14 +189,6 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 	}
 
-//	private void updateUserId(String tokenUser, int userId) {
-//		try {
-//			cartService.updateUserId(tokenUser, userId);
-//		} catch (Exception e) {
-//			System.out.println(e.getMessage());
-//		}
-//	}
-
 	@Override
 	public void blockOrUnBlockUser(int id,boolean activity) {
 		User user = userDao.getOne(id);
@@ -228,17 +212,27 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public UserModel findByEmailAfterLogin(String email) throws SQLException {
+	public UserModel getUserByEmail(String email) throws SQLException {
 		User userTmp = userDao.findByEmail(email);
 		UserModel userReturn = new UserModel();
 		userReturn.setEmail(userTmp.getEmail());
 		userReturn.setFullName(userTmp.getFullName());
 		userReturn.setDateOfBirth(userTmp.getDateOfBirth().toString());
-		userReturn.setAvataUrl(userTmp.getAvataUrl());
+		userReturn.setImageUrl(userTmp.getImageUrl());
 		userReturn.setRole(userTmp.getRole());
 		userReturn.setPhone(userTmp.getPhone());
 		userReturn.setId(userTmp.getId());
+		userReturn.setActive(userTmp.isActive());
+		userReturn.setSex(userTmp.getSex());
+		userReturn.setCountry(userTmp.getAddress().getCountry());
+		userReturn.setProvince(userTmp.getAddress().getProvince());
+		userReturn.setDistrict(userTmp.getAddress().getDistrict());
+		userReturn.setVillage(userTmp.getAddress().getVillage());
+		userReturn.setStreet(userTmp.getAddress().getStreet());
+		userReturn.setImageUrl(ServletUriComponentsBuilder.fromCurrentContextPath()
+				.path("/api/user/avatar/" +userTmp.getImageUrl()).toUriString());
 		return userReturn;
 	}
+
 
 }

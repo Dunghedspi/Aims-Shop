@@ -75,43 +75,30 @@ public class AuthController {
 
 	@PostMapping(value = "/login", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE})
 	public ResponseEntity<Object> login(User user, HttpServletResponse response, HttpServletRequest request) {
+		
 		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+		String status = null;
 		UserModel userModel = null;
 		try {
 			if (userService.checkLogin(user)) {
 				String result = jwtService.generateTokenLogin(user.getEmail());
 				Cookie jwt = utils.createCookie("Authorization", result, true, (long) 3600);
-				
-				Cookie[] cookies = request.getCookies();
-				if(cookies ==  null) {
-					response.addCookie(jwt);
-				}else {
-					if(utils.checkCookies(cookies)) {
-						for(Cookie cookie : cookies) {
-							if(cookie.getName().equals("Authorization")) {
-								cookie.setValue(jwt.getValue());
-								cookie.setMaxAge(jwt.getMaxAge());
-								break;
-							}
-						}
-					}else {
-						response.addCookie(jwt);
-					}
-				}
 				Cookie cookie = utils.getCookie(request, "userToken");
-				userModel = userService.findByEmailAfterLogin(user.getEmail());
+				userModel = userService.getUserByEmail(user.getEmail());
 				if (null != cookie) {
 					cartService.updateUserId(cookie.getValue(), userModel.getId());
 				}
-				//response.addCookie(jwt);
+				response.addCookie(jwt);
 				httpStatus = HttpStatus.OK;
-				System.out.println(result);
+				user = userService.findByEmail(user.getEmail());
+				status = user.getRole();
+			}else {
+				status = "Email or Password is wrong!";
 			}
 		} catch (Exception ex) {
-			System.out.println(ex.getMessage());
-			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			ex.getStackTrace();
 		}
-		return new ResponseEntity<Object>(userModel,httpStatus);
+		return new ResponseEntity<Object>(status, httpStatus);
 	}
 
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
@@ -136,7 +123,7 @@ public class AuthController {
 			userService.applyNewPassword(user);
 			return new ResponseEntity<String>(HttpStatus.OK);
 		}else {
-			return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<String>("Email not existed!",HttpStatus.NO_CONTENT);
 		}
 	}
 

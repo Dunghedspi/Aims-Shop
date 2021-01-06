@@ -112,8 +112,8 @@ public class Product {
 	@Column(name="modified_date")
 	private Date modifiedDate;
 	
-	@Column(name="product_url")
-	private String productUrl;
+	@Column(name="image_url")
+	private String imageUrl;
 	
 	@ManyToOne
 	@JoinColumn(name="category_id")

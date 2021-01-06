@@ -14,6 +14,7 @@ import itss.nhom7.entities.Product;
 @Repository
 public interface IProductDAO extends JpaRepository<Product, Integer> {
 	List<Product> getListProductByNameContaining(String nameProduct);
+	List<Product> getListProductByNameContainingOrAuthorContainingOrArtistsContaining(String searchText1, String searchText2, String searchText3);
 	
 	@Query("select p from Product p where p.category.code = ?1")
 	List<Product> getListProductCode(String code);

@@ -15,6 +15,7 @@ public class MediaModel {
 	private int value;
 	private int quantity;
 	private boolean isDelete;
+	private String imageUrl;
 	private String barcode;
 
 }

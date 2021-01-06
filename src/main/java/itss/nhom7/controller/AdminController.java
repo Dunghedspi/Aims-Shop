@@ -30,10 +30,23 @@ public class AdminController {
 	private ProductService productService;
 	
 	@PostMapping(value = "/registerAdmin", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public ResponseEntity<Object> createUser(UserModel userModel) {
+	public ResponseEntity<Object> createAdmin(UserModel userModel) {
 		HttpStatus httpStatus = null;
 		try {
 			userModel.setRole("ROLE_ADMIN");
+			httpStatus = userService.addUser(userModel);
+		} catch (SQLException e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			e.printStackTrace();
+		}
+		return new ResponseEntity<Object>(httpStatus);
+	}
+	
+	@PostMapping(value = "/registerCustomer", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public ResponseEntity<Object> createUser(UserModel userModel) {
+		HttpStatus httpStatus = null;
+		try {
+			userModel.setRole("ROLE_USER");
 			httpStatus = userService.addUser(userModel);
 		} catch (SQLException e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;

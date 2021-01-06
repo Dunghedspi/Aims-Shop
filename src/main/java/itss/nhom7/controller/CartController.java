@@ -86,7 +86,7 @@ public class CartController {
 		HttpStatus httpStatus = null;
 		try {
 			if(cartDetailService.editCartDetail(cartDetailModel)) {
-				result = "add Product To Cart Successfully!";
+				result = "edit Product To Cart Successfully!";
 			}else {
 				result = "so luong san pham trong gio lon hon trong kho";
 			}
