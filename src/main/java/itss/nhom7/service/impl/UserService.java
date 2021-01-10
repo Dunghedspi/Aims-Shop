@@ -62,10 +62,11 @@ public class UserService implements IUserService, UserDetailsService {
 		}
 		return isCheck;
 	}
-
+//sửa kiểu trả về là Http
 	@Override
-	public boolean addUser(UserModel userModel) throws SQLException {
-		boolean isCreated = false;
+	public HttpStatus addUser(UserModel userModel) throws SQLException {
+		//boolean isCreated = false;
+    //HttpStatus status = null;
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
@@ -81,7 +82,6 @@ public class UserService implements IUserService, UserDetailsService {
         user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
 				userDao.saveAndFlush(user);
 				isCreated = true;
-
 				
 //				Address address = new Address();
 //				address.setCountry(userModel.getCountry());
@@ -100,8 +100,10 @@ public class UserService implements IUserService, UserDetailsService {
 			}
 		}catch (Exception e) {
 			System.out.println(e);
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
-			return isCreated;
+			//return isCreated;
+    return status;
 	}
 
 	@Override
@@ -251,7 +253,8 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public UserModel findByEmailAfterLogin(String email) throws SQLException {
-		User userTmp = userDao.findByEmail(email);
+		/*
+    User userTmp = userDao.findByEmail(email);
 		UserModel userReturn = new UserModel();
 		userReturn.setEmail(userTmp.getEmail());
 		userReturn.setFullName(userTmp.getFullName());
@@ -260,6 +263,25 @@ public class UserService implements IUserService, UserDetailsService {
 		userReturn.setRole(userTmp.getRole());
 		userReturn.setPhone(userTmp.getPhone());
 		userReturn.setId(userTmp.getId());
+    */
+    //Sửa thành
+    UserModel userReturn = new UserModel();
+		userReturn.setEmail(userTmp.getEmail());
+		userReturn.setFullName(userTmp.getFullName());
+		userReturn.setDateOfBirth(userTmp.getDateOfBirth().toString());
+		userReturn.setImageUrl(userTmp.getImageUrl());
+		userReturn.setRole(userTmp.getRole());
+		userReturn.setPhone(userTmp.getPhone());
+		userReturn.setId(userTmp.getId());
+		userReturn.setActive(userTmp.isActive());
+		userReturn.setSex(userTmp.getSex());
+		userReturn.setCountry(userTmp.getAddress().getCountry());
+		userReturn.setProvince(userTmp.getAddress().getProvince());
+		userReturn.setDistrict(userTmp.getAddress().getDistrict());
+		userReturn.setVillage(userTmp.getAddress().getVillage());
+		userReturn.setStreet(userTmp.getAddress().getStreet());
+		userReturn.setImageUrl(ServletUriComponentsBuilder.fromCurrentContextPath()
+				.path("/api/user/avatar/" +userTmp.getImageUrl()).toUriString());
 		return userReturn;
 	}
 

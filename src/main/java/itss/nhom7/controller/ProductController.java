@@ -1,11 +1,15 @@
 package itss.nhom7.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +35,7 @@ public class ProductController {
 
 	// Them san pham theo loai
 	@PostMapping(value = "/addProduct", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_FORM_URLENCODED_VALUE })
+			MediaType.APPLICATION_FORM_URLENCODED_VALUE , MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ResponseEntity<String> addProduct(ProductModel product) {
 		HttpStatus httpStatus = HttpStatus.NOT_ACCEPTABLE;
 		try {
@@ -97,6 +101,22 @@ public class ProductController {
 		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
 		try {
 			mediaModels = productService.getListProductByName(name);
+			httpStatus = HttpStatus.OK;
+		} catch (Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<Object>(mediaModels, httpStatus);
+	}
+
+	// Tim kiem cac san pham theo ten, author, artist
+	@GetMapping(value = "/getProductSearch/{searchText}")
+	public ResponseEntity<Object> getListProductByNameOrAuthorOrArtist(@PathVariable("searchText") String searchText) {
+		HttpStatus httpStatus = HttpStatus.NO_CONTENT;
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		try {
+			mediaModels = productService.getListProductByNameOrAuthorOrArtist(searchText);
+			httpStatus = HttpStatus.OK;
 		} catch (Exception e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
@@ -132,6 +152,22 @@ public class ProductController {
 		}
 		return new ResponseEntity<ProductModel>(productModel, httpStatus);
 	}
+	
+	//Lay anh cua product
+	@GetMapping("/productImage/{photo}")
+	public ResponseEntity<Object> getImageAvatar1(@PathVariable("photo") String photo) throws SQLException {
+		HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+		try {
+			Path filename = Paths.get("uploads/product/", photo);
+			byte[] buffer = Files.readAllBytes(filename);
+			ByteArrayResource byteArrayResource = new ByteArrayResource(buffer);
+			return ResponseEntity.ok().contentLength(buffer.length).contentType(MediaType.valueOf(MediaType.IMAGE_JPEG_VALUE)).body(byteArrayResource);
+		} catch (Exception e) {
+			System.out.println(e);
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+		}
+		return new ResponseEntity<Object>(httpStatus);
+	}
 
 	// Sua thong tin san pham
 	@PutMapping(value = "/editProduct", produces = { MediaType.APPLICATION_JSON_VALUE,
@@ -140,7 +176,7 @@ public class ProductController {
 
 		HttpStatus httpStatus = HttpStatus.NOT_ACCEPTABLE;
 		try {
-			if(productService.editProduct(product)) {
+			if (productService.editProduct(product)) {
 				httpStatus = HttpStatus.OK;
 			}
 		} catch (Exception e) {

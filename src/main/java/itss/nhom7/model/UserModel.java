@@ -14,7 +14,7 @@ public class UserModel {
 	 
 	private int id;
     private String fullName;
-    private String avataUrl;
+    private String imageUrl;
     private String email;
     private String password;
     private String phone;
@@ -28,6 +28,7 @@ public class UserModel {
 	private String village;
 	private String street;
     private boolean active;
+	
  
  
 //    public UserModel(CustomerForm customerForm) {

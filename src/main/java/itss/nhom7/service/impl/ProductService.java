@@ -1,14 +1,24 @@
 package itss.nhom7.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import itss.nhom7.dao.ICartDAO;
 import itss.nhom7.dao.ICategoryDAO;
@@ -17,6 +27,7 @@ import itss.nhom7.dao.IOrderDetailDAO;
 import itss.nhom7.dao.IProductDAO;
 import itss.nhom7.entities.Cart;
 import itss.nhom7.entities.Product;
+import itss.nhom7.exception.FileStorageException;
 import itss.nhom7.model.CartDetailModel;
 import itss.nhom7.model.MediaModel;
 import itss.nhom7.model.ProductModel;
@@ -51,14 +62,30 @@ public class ProductService implements IProductService {
 			productAdd = mapLPPhy(product);
 		} else {
 			System.out.println("Add failed");
+			return false;
 		}
 		productAdd.setCategory(categoryDao.findCateoryByCode(product.getCodeCategory()));
 		productAdd.setDelete(false);
-		productAdd.setProductUrl(product.getProductUrl());
+		productAdd.setImageUrl(createUrlImageProduct(product.getImageFile()));
 		productDao.save(productAdd);
 
 		return true;
 
+	}
+
+	private String createUrlImageProduct(MultipartFile imageFile) {
+		String fileName = null;
+		try {
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			String token = String.valueOf(timestamp.getTime());
+			fileName = token.concat(Objects.requireNonNull(imageFile.getOriginalFilename()));
+			Path path = Paths.get("uploads/product/");
+			InputStream inputStream = imageFile.getInputStream();
+			Files.copy(inputStream, path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			throw new FileStorageException("Could not store file " + imageFile + ". Please try again!", e);
+		}
+		return fileName;
 	}
 
 	@Override
@@ -84,7 +111,7 @@ public class ProductService implements IProductService {
 			}
 			productEdit.setId(productDao.getOne(product.getId()).getId());
 			productEdit.setCategory(productDao.getOne(product.getId()).getCategory());
-			productEdit.setProductUrl(product.getProductUrl());
+			productEdit.setImageUrl(product.getImageUrl());
 			productDao.saveAndFlush(productEdit);
 			
 			return true;
@@ -201,7 +228,7 @@ public class ProductService implements IProductService {
 		product.setValue(cd.getValue());
 		product.setQuantity(cd.getQuantity());
 		product.setArtists(cd.getArtists());
-		product.setTracklist(cd.getArtists());
+		product.setTracklist(cd.getTracklist());
 		product.setType(cd.getType());
 		product.setInputDate(new SimpleDateFormat("yyyy-MM-dd").parse(cd.getInputDate()));
 
@@ -302,72 +329,10 @@ public class ProductService implements IProductService {
 		mediaModel.setName(product.getName());
 		mediaModel.setPrice(product.getPrice());
 		mediaModel.setQuantity(product.getQuantity());
+		mediaModel.setImageUrl(ServletUriComponentsBuilder.fromCurrentContextPath()
+				.path("/api/product/productImage/" + product.getImageUrl()).toUriString());
 		return mediaModel;
 	}
-	// ====== End ======
-//	private Product mapLPPhy(LPPhysicalModel lp) {
-//		Product product = new Product();
-//		product.setName(lp.getName());
-//		product.setPrice(lp.getPrice());
-//		product.setValue(lp.getValue());
-//		product.setQuantity(lp.getQuantity());
-//		product.setArtists(lp.getArtists());
-//		product.setTracklist(lp.getArtists());
-//		product.setType(lp.getType());
-//		product.setInputDate(lp.getInputDate());
-//		return product;
-//		
-//	}
-//
-//	private Product mapDVDPhy(DVDPhysicalModel dvd) {
-//		Product product = new Product();
-//		product.setName(dvd.getName());
-//		product.setPrice(dvd.getPrice());
-//		product.setValue(dvd.getValue());
-//		product.setQuantity(dvd.getQuantity());
-//		product.setRuntime(dvd.getRuntime());
-//		product.setSubtitles(dvd.getSubtitles());
-//		product.setPublicationDate(new SimpleDateFormat("yyyy-MM-dd").parse(dvd.getPublicatioDate()));
-//		product.setType(dvd.getType());
-//		product.setLanguage(dvd.getLanguage());
-//		product.setAuthor(dvd.getAuthor());
-//		
-//		return product;
-//		
-//	}
-//
-//	private Product mapCDPhy(CDPhysicalModel cd) {
-//		Product product = new Product();
-//		product.setName(cd.getName());
-//		product.setPrice(cd.getPrice());
-//		product.setValue(cd.getValue());
-//		product.setQuantity(cd.getQuantity());
-//		product.setArtists(cd.getArtists());
-//		product.setTracklist(cd.getArtists());
-//		product.setType(cd.getType());
-//		product.setInputDate(cd.getInputDate());
-//		
-//		return product;
-//		
-//	}
-//
-//	private Product mapBookPhy(BookPhysicalModel book) {
-//		Product product = new Product();
-//		product.setName(book.getName());
-//		product.setPrice(book.getPrice());
-//		product.setValue(book.getValue());
-//		product.setQuantity(book.getQuantity());
-//		product.setAuthor(book.getAuthor());
-//		
-//		product.setCoverType(book.getCoverType());
-//		product.setPublisher(book.getPublisher());
-//		product.setPublicationDate(book.getPublicationDate());
-//		product.setPages(book.getPages());
-//		product.setLanguage(book.getLanguage());
-//		product.setType(book.getType());
-//		
-//		return product;
-//	}
 
 	@Override
 	public List<MediaModel> getListProductByCategory(String code) {
@@ -399,7 +364,7 @@ public class ProductService implements IProductService {
 			}
 			productModel.setCodeCategory(categoryDao.findCateoryByCode(product.getCategory().getCode()).getCode());
 			productModel.setDelete(false);
-			productModel.setProductUrl(product.getProductUrl());
+			productModel.setImageUrl(product.getImageUrl());
 		}
 
 		return null;
@@ -420,6 +385,18 @@ public class ProductService implements IProductService {
 	@Override
 	public List<MediaModel> getListProductOrderByPrice() throws SQLException {
 		List<Product> products = productDao.getListProductOrderPrice();
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		for (Product product : products) {
+			MediaModel mediaModel = new MediaModel();
+			mediaModel = getMediaModelById(product.getId());
+			mediaModels.add(mediaModel);
+		}
+		return mediaModels;
+	}
+
+	@Override
+	public List<MediaModel> getListProductByNameOrAuthorOrArtist(String searchText) throws SQLException {
+		List<Product> products = productDao.getListProductByNameContainingOrAuthorContainingOrArtistsContaining(searchText, searchText, searchText);
 		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
 		for (Product product : products) {
 			MediaModel mediaModel = new MediaModel();

@@ -1,5 +1,7 @@
 package itss.nhom7.model;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,7 @@ public class ProductModel {
 	private String modifiedDate;
 	private String codeCategory;
 	private int saleDiscount;
-	private String productUrl;
+	private String imageUrl;
+	private MultipartFile imageFile;
 
 }
