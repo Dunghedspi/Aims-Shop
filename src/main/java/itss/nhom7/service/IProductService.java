@@ -16,6 +16,7 @@ public interface IProductService {
 	void deleteProduct(int id) throws SQLException;													//xoa san pham(admin)
 	List<MediaModel> getListProductByTokenUser(String tokenUser) throws SQLException;				//lay san pham theo tokenuser
 	List<MediaModel> getListProductTrending() throws SQLException;									//lay cac san pham dang ban chay
+	List<MediaModel> getListProductHasSale() throws SQLException;									//lay cac san pham dang co sale
 	List<MediaModel> getListProductByName(String nameProduct) throws SQLException;					//tim kiem san pham bang ten
 	List<MediaModel> getListProductByNameOrAuthorOrArtist(String searchText) throws SQLException;	//tim kiem san pham bang ten, author, artist
 	List<MediaModel> getListProductRandom() throws SQLException;									//tim kiem san pham ngau nhien
