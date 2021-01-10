@@ -30,8 +30,8 @@ public class CartService implements ICartService{
 		Cart cart = new Cart();
 		cart.setTokenUser(tokenUser);
 		Calendar timeout = Calendar.getInstance();
-		cart.setUserId(1);
 		cart.setCreatedAt(timeout);
+		cart.setUserId(1);
 		cartDao.save(cart);
 	}
 
