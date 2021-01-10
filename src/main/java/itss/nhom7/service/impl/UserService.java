@@ -26,8 +26,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.dao.IUserDAO;
+
 import itss.nhom7.entities.Address;
 
 import itss.nhom7.entities.User;
@@ -43,8 +43,6 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private IUserDAO userDao;
-	@Autowired
-	private IAddressDAO addressDao;
 	@Autowired
 	private CartService cartService;
 	@Autowired
@@ -77,9 +75,25 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
 				user.setCreatedAt(Calendar.getInstance());
-				user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
+        user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
 				userDao.saveAndFlush(user);
 				isCreated = true;
+
+				
+//				Address address = new Address();
+//				address.setCountry(userModel.getCountry());
+//				address.setProvince(userModel.getProvince());
+//				address.setDistrict(userModel.getDistrict());
+//				address.setVillage(userModel.getVillage());
+//				address.setStreet(userModel.getStreet());
+//				addressDao.save(address);
+				
+				//user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(), userModel.getVillage(), userModel.getStreet()));
+				userDao.save(user);
+				status = HttpStatus.OK;
+			} else {
+				status = HttpStatus.CREATED;
+
 			}
 		}catch (Exception e) {
 			System.out.println(e);

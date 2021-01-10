@@ -1,5 +1,6 @@
 package itss.nhom7.model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,13 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MediaModel {
-	
+public class ImageProductModel {
 	private int id;
-	private String name;
-	private int price;
-	private int value;
-	private int quantity;
-	private boolean isDelete;
-
+	private String fileName;
+	private String fileDownloadUri;
+	private String fileType;
+	private int productId;
 }

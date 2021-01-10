@@ -108,7 +108,7 @@ public class AuthController {
 				}else {
 					if(utils.checkCookies(cookies)) {
 						for(Cookie cookie : cookies) {
-							if(cookie.getName().contentEquals("Authorization")) {
+							if(cookie.getName().equals("Authorization")) {
 								cookie.setValue(jwt.getValue());
 								cookie.setMaxAge(jwt.getMaxAge());
 								break;
@@ -139,17 +139,20 @@ public class AuthController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
 
-		//if (auth != null) {
-		//	utils.deleteCookie(request, "Authentication");
-		//	utils.deleteCookie(request, "userToken");
-//			Cookie jwt = utils.deleteCookie(request, "Authentication");
-//			Cookie userToken = utils.deleteCookie(request, "userToken");
-//			response.addCookie(jwt);
-//			response.addCookie(userToken);
-		//	new SecurityContextLogoutHandler().logout(request, response, auth);
-			//httpStatus = HttpStatus.OK;
-	//	}
-  
+  /*Sửa hàm login từ đây
+		if (auth != null) {
+			Cookie jwt = utils.createCookie("Authorization", null, true, (long) 0);
+			response.addCookie(jwt);
+			//Cookie userToken = utils.deleteCookie(request, "userToken");
+			Cookie userToken = utils.createCookie("userToken", null, true, (long) 0);
+			response.addCookie(userToken);
+			new SecurityContextLogoutHandler().logout(request, response, auth);
+			httpStatus = HttpStatus.OK;
+		}
+    đến đây
+    */
+
+  // Xóa từ đây
 //		if (auth != null) {
 		Cookie userToken = utils.createCookie("userToken", null, false, (long) 0);
 		response.addCookie(userToken);
@@ -158,7 +161,8 @@ public class AuthController {
 		new SecurityContextLogoutHandler().logout(request, response, auth);
 		httpStatus = HttpStatus.OK;
 		//}
-
+//đến đây
+    
 		return new ResponseEntity<String>(httpStatus);
 	}
 
