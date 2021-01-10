@@ -2,9 +2,13 @@ package itss.nhom7.service.impl;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -21,14 +25,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import itss.nhom7.dao.IAddressDAO;
 import itss.nhom7.dao.IUserDAO;
+
 import itss.nhom7.entities.Address;
+
 import itss.nhom7.entities.User;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.IUserService;
+
+import itss.nhom7.model.CartModel;
+import org.springframework.stereotype.Service;
+
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -53,33 +62,48 @@ public class UserService implements IUserService, UserDetailsService {
 		}
 		return isCheck;
 	}
-
+//sửa kiểu trả về là Http
 	@Override
 	public HttpStatus addUser(UserModel userModel) throws SQLException {
-		HttpStatus status = null;
+		//boolean isCreated = false;
+    //HttpStatus status = null;
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
 				User user = new User();
 				user.setActive(true);
 				user.setFullName(userModel.getFullName());
-				user.setImageUrl(userModel.getImageUrl());
+				user.setAvataUrl(userModel.getAvataUrl());
 				user.setEmail(userModel.getEmail());
 				user.setPassword(userModel.getPassword());
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
-				user.setCreatedAt(new Date());
+				user.setCreatedAt(Calendar.getInstance());
+        user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
+				userDao.saveAndFlush(user);
+				isCreated = true;
 				
+//				Address address = new Address();
+//				address.setCountry(userModel.getCountry());
+//				address.setProvince(userModel.getProvince());
+//				address.setDistrict(userModel.getDistrict());
+//				address.setVillage(userModel.getVillage());
+//				address.setStreet(userModel.getStreet());
+//				addressDao.save(address);
+				
+				//user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(), userModel.getVillage(), userModel.getStreet()));
 				userDao.save(user);
 				status = HttpStatus.OK;
 			} else {
 				status = HttpStatus.CREATED;
+
 			}
 		}catch (Exception e) {
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
-			return status;
+			//return isCreated;
+    return status;
 	}
 
 	@Override
@@ -110,7 +134,6 @@ public class UserService implements IUserService, UserDetailsService {
 	public void applyNewPassword(User user) {
 
 		User userUpdate = userDao.findByEmail(user.getEmail());
-		
 		String passRandom = RandomStringUtils.randomAlphanumeric(8);
 
 		if (user.getEmail().equals(userUpdate.getEmail())) {
@@ -131,7 +154,7 @@ public class UserService implements IUserService, UserDetailsService {
 
 		User user = userDao.findByEmail(userModel.getEmail());
 		user.setFullName(userModel.getFullName());
-		user.setImageUrl(userModel.getImageUrl());
+		user.setAvataUrl(userModel.getAvataUrl());
 		user.setSex(userModel.getSex());
 		Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth());
 		user.setDateOfBirth(dateOfBirth);
@@ -189,6 +212,23 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 	}
 
+//	private void updateUserId(String tokenUser, int userId) {
+//		try {
+//			cartService.updateUserId(tokenUser, userId);
+//		} catch (Exception e) {
+//			System.out.println(e.getMessage());
+//		}
+//	}
+
+	private void updateUserId(String tokenUser, int userId) {
+		try {
+			cartService.updateUserId(tokenUser, userId);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+
 	@Override
 	public void blockOrUnBlockUser(int id,boolean activity) {
 		User user = userDao.getOne(id);
@@ -212,9 +252,20 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public UserModel getUserByEmail(String email) throws SQLException {
-		User userTmp = userDao.findByEmail(email);
+	public UserModel findByEmailAfterLogin(String email) throws SQLException {
+		/*
+    User userTmp = userDao.findByEmail(email);
 		UserModel userReturn = new UserModel();
+		userReturn.setEmail(userTmp.getEmail());
+		userReturn.setFullName(userTmp.getFullName());
+		userReturn.setDateOfBirth(userTmp.getDateOfBirth().toString());
+		userReturn.setAvataUrl(userTmp.getAvataUrl());
+		userReturn.setRole(userTmp.getRole());
+		userReturn.setPhone(userTmp.getPhone());
+		userReturn.setId(userTmp.getId());
+    */
+    //Sửa thành
+    UserModel userReturn = new UserModel();
 		userReturn.setEmail(userTmp.getEmail());
 		userReturn.setFullName(userTmp.getFullName());
 		userReturn.setDateOfBirth(userTmp.getDateOfBirth().toString());
@@ -233,6 +284,5 @@ public class UserService implements IUserService, UserDetailsService {
 				.path("/api/user/avatar/" +userTmp.getImageUrl()).toUriString());
 		return userReturn;
 	}
-
 
 }

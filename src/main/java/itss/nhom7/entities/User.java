@@ -43,7 +43,7 @@ public class User implements Serializable{
 	
 	@Column(name="full_name")
 	private String fullName;
-	
+	//Đổi avatar_url thành image_url cho đồng bộ
 	@Column(name="image_url")
 	private String imageUrl;
 	
