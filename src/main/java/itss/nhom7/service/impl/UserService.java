@@ -2,10 +2,13 @@ package itss.nhom7.service.impl;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -24,9 +27,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import itss.nhom7.dao.IUserDAO;
+
+import itss.nhom7.entities.Address;
+
 import itss.nhom7.entities.User;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.IUserService;
+
+import itss.nhom7.model.CartModel;
+import org.springframework.stereotype.Service;
+
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -51,8 +61,8 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public HttpStatus addUser(UserModel userModel) throws SQLException {
-		HttpStatus status = null;
+	public boolean addUser(UserModel userModel) throws SQLException {
+		boolean isCreated = false;
 		try {
 			User userCheck = userDao.findByEmail(userModel.getEmail());
 			if(userCheck==null) {
@@ -65,6 +75,10 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
 				user.setCreatedAt(Calendar.getInstance());
+        user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
+				userDao.saveAndFlush(user);
+				isCreated = true;
+
 				
 //				Address address = new Address();
 //				address.setCountry(userModel.getCountry());
@@ -79,12 +93,12 @@ public class UserService implements IUserService, UserDetailsService {
 				status = HttpStatus.OK;
 			} else {
 				status = HttpStatus.CREATED;
+
 			}
 		}catch (Exception e) {
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
 		}
-			return status;
+			return isCreated;
 	}
 
 	@Override
@@ -177,6 +191,15 @@ public class UserService implements IUserService, UserDetailsService {
 //			System.out.println(e.getMessage());
 //		}
 //	}
+
+	private void updateUserId(String tokenUser, int userId) {
+		try {
+			cartService.updateUserId(tokenUser, userId);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
 
 	@Override
 	public void blockUser(int id) {

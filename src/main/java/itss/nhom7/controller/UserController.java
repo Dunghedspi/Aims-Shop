@@ -1,7 +1,10 @@
 package itss.nhom7.controller;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 
+import itss.nhom7.helper.Utils;
+import itss.nhom7.jwt.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.impl.UserService;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping(value="/api/user")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -23,15 +30,21 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
-
-	@GetMapping(value = "/getUser/{id}")
-	public ResponseEntity<UserModel> viewUser(@PathVariable("id") int id) {
-
-		UserModel userModel = userService.getUser(id);
-		if(userModel == null) {
-			return new ResponseEntity<UserModel>(userModel, HttpStatus.NO_CONTENT);
+	@Autowired
+	private Utils utils;
+	@Autowired
+	private JwtService jwtService;
+	@GetMapping(value = "/getUser")
+	public ResponseEntity<UserModel> getUser(HttpServletRequest req, HttpServletResponse res) throws SQLException {
+		Cookie jwt = utils.getCookie(req, "Authorization");
+		UserModel userModel = null;
+		HttpStatus httpStatus = HttpStatus.FORBIDDEN;
+		if (null != jwt) {
+			String email = jwtService.getEmailToken(jwt.getValue());
+			userModel = userService.findByEmailAfterLogin(email);
+			if(null != userModel) httpStatus = HttpStatus.OK;
 		}
-		return new ResponseEntity<UserModel>(userModel, HttpStatus.OK);
+		return new ResponseEntity<UserModel>(userModel, httpStatus);
 
 	}
 
