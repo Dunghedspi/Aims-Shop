@@ -83,6 +83,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 				.antMatchers(HttpMethod.GET,"/api/user/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.POST,"/api/user/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.PUT,"/api/user/**").access("hasRole('ROLE_USER')")
+
+				//để cái này là pertmitAll chứ để người chưa login vẫn xem được product
+      
+				//.antMatchers(HttpMethod.GET,"/api/product/**").permitAll()
+
 	
 				.antMatchers(HttpMethod.GET,"/api/product/**").access("hasRole('ROLE_USER')")
 				

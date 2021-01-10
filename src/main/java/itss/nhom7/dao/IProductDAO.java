@@ -17,4 +17,9 @@ public interface IProductDAO extends JpaRepository<Product, Integer> {
 	
 	@Query("select p from Product p where p.category.code = ?1")
 	List<Product> getListProductCode(String code);
+	@Query("select p from Product p order by p.price desc")
+	List<Product> getListProductOrderPrice();
+	@Query(nativeQuery = true,value="select p from Product p order by rand() limit 1")
+	List<Product> getListProductRandom20();
+	
 }
