@@ -365,6 +365,7 @@ public class ProductService implements IProductService {
 			productModel.setCodeCategory(categoryDao.findCateoryByCode(product.getCategory().getCode()).getCode());
 			productModel.setDelete(false);
 			productModel.setImageUrl(product.getImageUrl());
+			return productModel;
 		}
 
 		return null;
@@ -397,6 +398,18 @@ public class ProductService implements IProductService {
 	@Override
 	public List<MediaModel> getListProductByNameOrAuthorOrArtist(String searchText) throws SQLException {
 		List<Product> products = productDao.getListProductByNameContainingOrAuthorContainingOrArtistsContaining(searchText, searchText, searchText);
+		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
+		for (Product product : products) {
+			MediaModel mediaModel = new MediaModel();
+			mediaModel = getMediaModelById(product.getId());
+			mediaModels.add(mediaModel);
+		}
+		return mediaModels;
+	}
+
+	@Override
+	public List<MediaModel> getListProductHasSale() throws SQLException {
+		List<Product> products = productDao.getListProductHasSale20();
 		List<MediaModel> mediaModels = new ArrayList<MediaModel>();
 		for (Product product : products) {
 			MediaModel mediaModel = new MediaModel();

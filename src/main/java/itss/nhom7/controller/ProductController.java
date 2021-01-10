@@ -35,7 +35,7 @@ public class ProductController {
 
 	// Them san pham theo loai
 	@PostMapping(value = "/addProduct", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_FORM_URLENCODED_VALUE , MediaType.MULTIPART_FORM_DATA_VALUE})
+			MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
 	public ResponseEntity<String> addProduct(ProductModel product) {
 		HttpStatus httpStatus = HttpStatus.NOT_ACCEPTABLE;
 		try {
@@ -82,10 +82,25 @@ public class ProductController {
 	// Lay cac san pham ban chay
 	@GetMapping(value = "/getProductTrending")
 	public ResponseEntity<List<MediaModel>> getListMediaTrending() {
-		HttpStatus httpStatus = HttpStatus.NOT_ACCEPTABLE;
+		HttpStatus httpStatus = HttpStatus.NO_CONTENT;
 		List<MediaModel> listMediaModel = new ArrayList<MediaModel>();
 		try {
 			listMediaModel = productService.getListProductTrending();
+			return new ResponseEntity<List<MediaModel>>(listMediaModel, HttpStatus.OK);
+		} catch (Exception e) {
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println(e);
+		}
+		return new ResponseEntity<List<MediaModel>>(listMediaModel, httpStatus);
+	}
+
+	// Lay cac san pham ban co sale
+	@GetMapping(value = "/getProductHasSale")
+	public ResponseEntity<List<MediaModel>> getListMediaHasSale() {
+		HttpStatus httpStatus = HttpStatus.NO_CONTENT;
+		List<MediaModel> listMediaModel = new ArrayList<MediaModel>();
+		try {
+			listMediaModel = productService.getListProductHasSale();
 			return new ResponseEntity<List<MediaModel>>(listMediaModel, HttpStatus.OK);
 		} catch (Exception e) {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -152,8 +167,8 @@ public class ProductController {
 		}
 		return new ResponseEntity<ProductModel>(productModel, httpStatus);
 	}
-	
-	//Lay anh cua product
+
+	// Lay anh cua product
 	@GetMapping("/productImage/{photo}")
 	public ResponseEntity<Object> getImageAvatar1(@PathVariable("photo") String photo) throws SQLException {
 		HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -161,7 +176,8 @@ public class ProductController {
 			Path filename = Paths.get("uploads/product/", photo);
 			byte[] buffer = Files.readAllBytes(filename);
 			ByteArrayResource byteArrayResource = new ByteArrayResource(buffer);
-			return ResponseEntity.ok().contentLength(buffer.length).contentType(MediaType.valueOf(MediaType.IMAGE_JPEG_VALUE)).body(byteArrayResource);
+			return ResponseEntity.ok().contentLength(buffer.length)
+					.contentType(MediaType.valueOf(MediaType.IMAGE_JPEG_VALUE)).body(byteArrayResource);
 		} catch (Exception e) {
 			System.out.println(e);
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
