@@ -1,14 +1,6 @@
 package itss.nhom7.controller;
 
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import itss.nhom7.entities.User;
@@ -17,7 +9,6 @@ import itss.nhom7.jwt.JwtService;
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.impl.CartService;
 import itss.nhom7.service.impl.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,23 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
-import itss.nhom7.entities.User;
-import itss.nhom7.helper.Utils;
-import itss.nhom7.jwt.JwtService;
-import itss.nhom7.model.UserModel;
-import itss.nhom7.service.impl.CartService;
-import itss.nhom7.service.impl.UserService;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -65,19 +40,6 @@ public class AuthController {
 	@Autowired
 	private Utils utils;
 
-	@RequestMapping(value = "/createUserToken")
-	public ResponseEntity<Object> home(HttpServletResponse response, HttpServletRequest request) {
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		Cookie userToken = utils.getCookie(request, "userToken");
-		if (null == userToken) {
-			String token = String.valueOf(timestamp.getTime());
-			userToken = utils.createCookie("userToken", token, false, (long) 3600);
-			cartService.addTokenUser(token);
-			response.addCookie(userToken);
-		}
-		return new ResponseEntity<Object>("Access successfully!", HttpStatus.OK);
-	}
-
 	@PostMapping(value = "/register", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	public ResponseEntity<String> createUser(UserModel userModel) {
@@ -99,33 +61,17 @@ public class AuthController {
 		UserModel userModel = null;
 		try {
 			if (userService.checkLogin(user)) {
-				String result = jwtService.generateTokenLogin(user.getEmail());
-				Cookie jwt = utils.createCookie("Authorization", result, true, (long) 3600);
-				
-				Cookie[] cookies = request.getCookies();
-				if(cookies ==  null) {
-					response.addCookie(jwt);
-				}else {
-					if(utils.checkCookies(cookies)) {
-						for(Cookie cookie : cookies) {
-							if(cookie.getName().contentEquals("Authorization")) {
-								cookie.setValue(jwt.getValue());
-								cookie.setMaxAge(jwt.getMaxAge());
-								break;
-							}
-						}
-					}else {
-						response.addCookie(jwt);
-					}
-				}
-				Cookie cookie = utils.getCookie(request, "userToken");
 				userModel = userService.findByEmailAfterLogin(user.getEmail());
+				String result = jwtService.generateTokenLogin(userModel.getEmail(), userModel.getRole());
+				Cookie jwt = utils.createCookie("Authorization", result, true, (long) 3600);
+				Cookie cookie = utils.getCookie(request, "userToken");
 				if (null != cookie) {
 					cartService.updateUserId(cookie.getValue(), userModel.getId());
+					Cookie userToken = utils.createCookie("userToken", null, false, (long) 0);
+					response.addCookie(userToken);
 				}
-				//response.addCookie(jwt);
+				response.addCookie(jwt);
 				httpStatus = HttpStatus.OK;
-				System.out.println(result);
 			}
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
@@ -138,27 +84,14 @@ public class AuthController {
 	public ResponseEntity<String> logoutPage(HttpServletRequest request, HttpServletResponse response) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
-		//if (auth != null) {
-		//	utils.deleteCookie(request, "Authentication");
-		//	utils.deleteCookie(request, "userToken");
-//			Cookie jwt = utils.deleteCookie(request, "Authentication");
-//			Cookie userToken = utils.deleteCookie(request, "userToken");
-//			response.addCookie(jwt);
-//			response.addCookie(userToken);
-		//	new SecurityContextLogoutHandler().logout(request, response, auth);
-			//httpStatus = HttpStatus.OK;
-	//	}
-  
-//		if (auth != null) {
-		Cookie userToken = utils.createCookie("userToken", null, false, (long) 0);
-		response.addCookie(userToken);
-		Cookie jwt = utils.createCookie("Authorization", null, true, (long) 0);
-		response.addCookie(jwt);
-		new SecurityContextLogoutHandler().logout(request, response, auth);
-		httpStatus = HttpStatus.OK;
-		//}
-
+		if (auth != null) {
+			Cookie userToken = utils.createCookie("userToken", null, false, (long) 0);
+			response.addCookie(userToken);
+			Cookie jwt = utils.createCookie("Authorization", null, true, (long) 0);
+			response.addCookie(jwt);
+			new SecurityContextLogoutHandler().logout(request, response, auth);
+			httpStatus = HttpStatus.OK;
+		}
 		return new ResponseEntity<String>(httpStatus);
 	}
 
@@ -171,5 +104,4 @@ public class AuthController {
 			return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 		}
 	}
-
 }

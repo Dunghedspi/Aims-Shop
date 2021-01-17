@@ -17,12 +17,13 @@ public class JwtService {
 
 	
 	public static final String EMAIL = "email";
+	public static final String ROLE = "role";
 	public static final String SECRET_KEY = "ITSS_Team7_NguyenVanDung_NguyenThiThuUyen_PhamMinhHieu_NguyenVietLong";
 	public static final int EXPIRE_TIME = 68400000;
 	
 	
 	//create token
-	public String generateTokenLogin(String email) {
+	public String generateTokenLogin(String email, String role) {
 		
 		String token = null;
 		
@@ -32,6 +33,7 @@ public class JwtService {
 			
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
 			builder.claim(EMAIL,email);
+			builder.claim(ROLE, role);
 			builder.expirationTime(generateExpirationDate());
 			
 			JWTClaimsSet claimsSet = builder.build();

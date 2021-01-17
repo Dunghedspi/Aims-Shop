@@ -1,6 +1,7 @@
 package itss.nhom7.controller;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import itss.nhom7.helper.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +36,8 @@ public class CartController {
 	private CartService cartService;
 	@Autowired
 	private CartDetailService cartDetailService;
-	
+	@Autowired
+	private Utils utils;
 	
 	@GetMapping(value="/getCart")
 	public ResponseEntity<Object> getCart(HttpServletResponse response, HttpServletRequest request) {
@@ -75,8 +78,6 @@ public class CartController {
 			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 			System.out.println(e);
 		}
-		
-		
 		return new ResponseEntity<Object>(result, httpStatus);
 	}
 	
@@ -112,7 +113,16 @@ public class CartController {
 		}
 		
 		return new ResponseEntity<String>(httpStatus);
-
 	}
-
+	public Cookie getUserToken(HttpServletResponse response, HttpServletRequest request) {
+		Cookie userToken = utils.getCookie(request, "userToken");
+		if (null == userToken) {
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			String token = String.valueOf(timestamp.getTime());
+			userToken = utils.createCookie("userToken", token, false, (long) 3600);
+			cartService.addTokenUser(token);
+			response.addCookie(userToken);
+		}
+		return userToken;
+	}
 }

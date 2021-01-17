@@ -2,6 +2,7 @@ package itss.nhom7.entities;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -61,7 +62,7 @@ public class Product {
 	private String publisher;
 	
 	@Column(name="publication_date")
-	private Calendar publicationDate;
+	private Date publicationDate;
 	
 	@Column(name="pages")
 	private int pages;
@@ -92,7 +93,7 @@ public class Product {
 	private String description;
 	
 	@Column(name="input_date")
-	private Calendar inputDate;
+	private Date inputDate;
 	
 	@Column(name="weight")
 	private Double weight;
@@ -108,7 +109,16 @@ public class Product {
 	
 	@Column(name="modified_date")
 	private Calendar modifiedDate;
-	
+
+	@Column(name="barcode")
+	private String barCode;
+
+	@Column(name="product_image")
+	private String productImage;
+
+	private String codeCategory;
+	private String inputDateTime;
+	private String publicationDateTime;
 	@ManyToOne
 	@JoinColumn(name="category_id")
 	@EqualsAndHashCode.Exclude

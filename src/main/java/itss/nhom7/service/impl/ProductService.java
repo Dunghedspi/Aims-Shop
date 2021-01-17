@@ -1,5 +1,7 @@
 package itss.nhom7.service.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,27 +39,34 @@ public class ProductService implements IProductService{
 	private ICategoryDAO categoryDao;
 	
 	@Override
-	public void addProduct(Product product, String code) {
+	public void addProduct(Product product, String code) throws ParseException {
 		Product productAdd = new Product();
-		if(code.equals("bookPhy")) {
-			productAdd=mapBookPhy(modelMapper.map(product, BookPhysicalModel.class));
-		}else if(code.equals("cdPhy")) {
-			productAdd=mapCDPhy(modelMapper.map(product, CDPhysicalModel.class));
-		}else if(code.equals("dvdPhy")) {
-			productAdd=mapDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
-		}else if(code.equals("lpPhy")) {
-			productAdd=mapLPPhy(modelMapper.map(product, LPPhysicalModel.class));
-		}else {
-			System.out.println("Edit failed");
+		switch (code) {
+			case "bookPhy":
+				productAdd = mapBookPhy(modelMapper.map(product, BookPhysicalModel.class));
+				productAdd.setInputDate(new SimpleDateFormat("yyyy-MM-dd").parse(product.getInputDateTime()));
+				productAdd.setPublicationDate(new SimpleDateFormat("yyyy-MM-dd").parse(product.getPublicationDateTime()));
+				break;
+			case "cdPhy":
+				productAdd = mapCDPhy(modelMapper.map(product, CDPhysicalModel.class));
+				break;
+			case "dvdPhy":
+				productAdd = mapDVDPhy(modelMapper.map(product, DVDPhysicalModel.class));
+				break;
+			case "lpPhy":
+				productAdd = mapLPPhy(modelMapper.map(product, LPPhysicalModel.class));
+				break;
+			default:
+				System.out.println("Edit failed");
+				break;
 		}
 		productAdd.setCategory(categoryDao.findCateoryByCode(code));
 		productAdd.setDelete(false);
 		productDao.save(productAdd);
-		
 	}
 
 	@Override
-	public void editProduct(Product product, String category) {
+	public void editProduct(Product product, String category) throws ParseException {
 		Product productEdit = new Product();
 		
 		if(category.equals("bookPhy")) {
@@ -152,7 +161,7 @@ public class ProductService implements IProductService{
 		product.setArtists(lp.getArtists());
 		product.setTracklist(lp.getArtists());
 		product.setType(lp.getType());
-		product.setInputDate(lp.getInputDate());
+//		product.setInputDate(lp.getInputDate());
 		return product;
 		
 	}
@@ -165,7 +174,7 @@ public class ProductService implements IProductService{
 		product.setQuantity(dvd.getQuantity());
 		product.setRuntime(dvd.getRuntime());
 		product.setSubtitles(dvd.getSubtitles());
-		product.setPublicationDate(dvd.getPublicatioDate());
+//		product.setPublicationDate(dvd.getPublicatioDate());
 		product.setType(dvd.getType());
 		product.setLanguage(dvd.getLanguage());
 		product.setAuthor(dvd.getAuthor());
@@ -183,13 +192,13 @@ public class ProductService implements IProductService{
 		product.setArtists(cd.getArtists());
 		product.setTracklist(cd.getArtists());
 		product.setType(cd.getType());
-		product.setInputDate(cd.getInputDate());
+//		product.setInputDate(cd.getInputDate());
 		
 		return product;
 		
 	}
 
-	private Product mapBookPhy(BookPhysicalModel book) {
+	private Product mapBookPhy(BookPhysicalModel book) throws ParseException {
 		Product product = new Product();
 		product.setName(book.getName());
 		product.setPrice(book.getPrice());
@@ -199,11 +208,11 @@ public class ProductService implements IProductService{
 		
 		product.setCoverType(book.getCoverType());
 		product.setPublisher(book.getPublisher());
-		product.setPublicationDate(book.getPublicationDate());
 		product.setPages(book.getPages());
 		product.setLanguage(book.getLanguage());
 		product.setType(book.getType());
-		
+		product.setBarCode(book.getBarCode());
+		product.setProductImage(book.getProductImage());
 		return product;
 	}
 
@@ -217,6 +226,5 @@ public class ProductService implements IProductService{
 			mediaModels.add(mediaModel);
 		}
 		return mediaModels;
-	}	
-
+	}
 }

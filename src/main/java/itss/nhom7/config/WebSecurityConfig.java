@@ -87,13 +87,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 				.antMatchers(HttpMethod.PUT,"/api/card/**").access("hasRole('ROLE_USER')")
 				.antMatchers(HttpMethod.DELETE,"/api/card/**").access("hasRole('ROLE_USER')")
 				
-				.antMatchers(HttpMethod.GET,"/api/user/**").access("hasRole('ROLE_USER')")
-				.antMatchers(HttpMethod.POST,"/api/user/**").access("hasRole('ROLE_USER')")
+//				.antMatchers(HttpMethod.GET,"/api/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.POST,"/api/user/**").permitAll()
 				.antMatchers(HttpMethod.PUT,"/api/user/**").access("hasRole('ROLE_USER')")
 	
-				.antMatchers(HttpMethod.GET,"/api/product/**").access("hasRole('ROLE_USER')")
+				.antMatchers(HttpMethod.GET,"/api/product/**").permitAll()
 				
-				.antMatchers(HttpMethod.POST,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
+//				.antMatchers(HttpMethod.POST,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers(HttpMethod.PUT,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers(HttpMethod.DELETE,"/api/admin/**").access("hasRole('ROLE_ADMIN')")
 				

@@ -1,22 +1,14 @@
 package itss.nhom7.service.impl;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import java.util.*;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
+import itss.nhom7.dao.IAddressDAO;
+import itss.nhom7.dao.IUserDAO;
+import itss.nhom7.entities.Address;
+import itss.nhom7.entities.User;
+import itss.nhom7.model.UserModel;
+import itss.nhom7.service.IUserService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,16 +18,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import itss.nhom7.dao.IAddressDAO;
-import itss.nhom7.dao.IUserDAO;
-import itss.nhom7.entities.Address;
-
-import itss.nhom7.entities.User;
-import itss.nhom7.model.UserModel;
-import itss.nhom7.service.IUserService;
-
-import itss.nhom7.model.CartModel;
-import org.springframework.stereotype.Service;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 
 @Service
@@ -77,7 +66,8 @@ public class UserService implements IUserService, UserDetailsService {
 				user.setPhone(userModel.getPhone());
 				user.setRole(String.valueOf(1));
 				user.setCreatedAt(Calendar.getInstance());
-				user.setDateOfBirth(new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth()));
+				user.setSex(userModel.getSex());
+				user.setDateOfBirth(new SimpleDateFormat("yyyy-MM-dd").parse(userModel.getDateOfBirth()));
 				userDao.saveAndFlush(user);
 				isCreated = true;
 			}
@@ -132,17 +122,33 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public void editUser(UserModel userModel) throws ParseException {
-
 		User user = userDao.findByEmail(userModel.getEmail());
 		user.setFullName(userModel.getFullName());
-		user.setAvataUrl(userModel.getAvataUrl());
 		user.setSex(userModel.getSex());
-		Date dateOfBirth = new SimpleDateFormat("dd/MM/yyyy").parse(userModel.getDateOfBirth());
+		Date dateOfBirth = new SimpleDateFormat("yyyy-MM-dd").parse(userModel.getDateOfBirth());
 		user.setDateOfBirth(dateOfBirth);
 		user.setPhone(userModel.getPhone());
-
+		if (user.getAddress() == null) {
+			Address address = new Address();
+			address.setCountry(userModel.getCountry());
+			address.setProvince(userModel.getProvince());
+			address.setDistrict(userModel.getDistrict());
+			address.setVillage(userModel.getVillage());
+			address.setStreet(userModel.getStreet());
+			addressDao.save(address);
+			user.setAddress(addressDao.findByDistrictAndVillageAndStreet(userModel.getDistrict(),
+					userModel.getVillage(), userModel.getStreet()));
+		} else {
+			Address address = user.getAddress();
+			address.setCountry(userModel.getCountry());
+			address.setProvince(userModel.getProvince());
+			address.setDistrict(userModel.getDistrict());
+			address.setVillage(userModel.getVillage());
+			address.setStreet(userModel.getStreet());
+			addressDao.saveAndFlush(address);
+			user.setAddress(address);
+		}
 		userDao.save(user);
-
 	}
 
 	@Override
@@ -159,24 +165,6 @@ public class UserService implements IUserService, UserDetailsService {
 	public void updateExpired(String tokenUser) throws SQLException {
 		cartService.updateExpired(tokenUser);
 	}
-
-	@Override
-	public HttpServletResponse createCookie(String tokenUser, HttpServletResponse response) {
-		Cookie cookie = new Cookie("tokenUser", tokenUser);
-		cookie.setPath("/");
-		response.addCookie(cookie);
-		cookie.setMaxAge(60 * 60 * 60);
-		cartService.addTokenUser(tokenUser);
-		return response;
-	}
-
-//	private void updateUserId(String tokenUser, int userId) {
-//		try {
-//			cartService.updateUserId(tokenUser, userId);
-//		} catch (Exception e) {
-//			System.out.println(e.getMessage());
-//		}
-//	}
 
 	private void updateUserId(String tokenUser, int userId) {
 		try {
@@ -207,7 +195,33 @@ public class UserService implements IUserService, UserDetailsService {
 		userReturn.setRole(userTmp.getRole());
 		userReturn.setPhone(userTmp.getPhone());
 		userReturn.setId(userTmp.getId());
+		userReturn.setSex(userTmp.getSex());
+		if (null != userTmp.getAddress()) {
+			userReturn.setCountry(userTmp.getAddress().getCountry());
+			userReturn.setDistrict(userTmp.getAddress().getDistrict());
+			userReturn.setProvince(userTmp.getAddress().getProvince());
+			userReturn.setStreet(userTmp.getAddress().getStreet());
+			userReturn.setVillage(userTmp.getAddress().getVillage());
+		}
 		return userReturn;
+	}
+
+	@Override
+	public boolean editUserImage(UserModel userModel, String email) throws Exception {
+		User user = userDao.findByEmail(email);
+		user.setAvataUrl(userModel.getAvataUrl());
+		userDao.save(user);
+		return true;
+	}
+
+	@Override
+	public boolean checkLoginAdmin(User user) {
+		User userfind = userDao.findByEmail(user.getEmail());
+		boolean isCheck = false;
+		if ((null != userfind) && userfind.getPassword().equals(user.getPassword()) && userfind.getRole().equals("2")) {
+			isCheck = true;
+		}
+		return isCheck;
 	}
 
 }

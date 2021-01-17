@@ -2,7 +2,6 @@ package itss.nhom7.service;
 
 import itss.nhom7.entities.User;
 import itss.nhom7.model.UserModel;
-import org.springframework.http.HttpStatus;
 
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -18,6 +17,6 @@ public interface IUserService {
 	UserModel getUser(int id) throws SQLException;								//Lay thong tin nguoi dung (nguoi dung)
 	void blockUser(int id) throws SQLException;
 	void updateExpired(String tokenUser) throws SQLException;					//update han dung cho tokenUser
-//	HttpServletResponse createCookie(String tokenUser,HttpServletResponse response);//Thiet lap cookie cho nguoi dung
-	//void updateUserId(Cookie[] cookies,int userId);
+	boolean checkLoginAdmin(User user);
+	boolean editUserImage(UserModel userModel, String email) throws Exception;
 }

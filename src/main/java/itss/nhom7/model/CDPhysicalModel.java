@@ -14,5 +14,5 @@ public class CDPhysicalModel extends MediaModel {
 	private String artists;
 	private String tracklist;
 	private String type;
-	private Calendar inputDate;
+//	private Calendar inputDate;
 }

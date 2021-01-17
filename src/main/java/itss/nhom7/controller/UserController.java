@@ -7,14 +7,9 @@ import itss.nhom7.helper.Utils;
 import itss.nhom7.jwt.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import itss.nhom7.model.UserModel;
 import itss.nhom7.service.impl.UserService;
@@ -24,8 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
+@CrossOrigin(origins = "*", allowCredentials = "true")
 @RequestMapping(value="/api/user")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
 	@Autowired
@@ -48,13 +43,25 @@ public class UserController {
 
 	}
 
-	@PutMapping(value = "/editUser")
-	public ResponseEntity<Object> editUser(@RequestBody UserModel userModel) throws ParseException {
-		if(userService.getUser(userModel.getId()) == null) {
-			return new ResponseEntity<Object>("Edit failed!", HttpStatus.NO_CONTENT);
+	@PostMapping(value = "/editUser", produces = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	public ResponseEntity<Object> editUser(UserModel userModel, HttpServletRequest req) throws ParseException {
+		Cookie jwt = utils.getCookie(req,"Authorization");
+		HttpStatus httpStatus = HttpStatus.FORBIDDEN;
+		if(null != jwt) {
+			userService.editUser(userModel);
+			httpStatus = HttpStatus.OK;
 		}
-		userService.editUser(userModel);
-		return new ResponseEntity<Object>("Edit successfully!", HttpStatus.OK);
+		return new ResponseEntity<Object>("Edit successfully!", httpStatus);
+	}
+	@PostMapping(value = "/editImageUser", produces = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+	public ResponseEntity<Object> editImageUser(UserModel userModel, HttpServletRequest req) throws Exception {
+		Cookie jwt = utils.getCookie(req,"Authorization");
+		HttpStatus httpStatus = HttpStatus.FORBIDDEN;
+		if(null != jwt) {
+			userService.editUserImage(userModel, jwtService.getEmailToken(jwt.getValue()));
+			httpStatus = HttpStatus.OK;
+		}
+		return new ResponseEntity<Object>("Edit successfully!", httpStatus);
 	}
 
 }
