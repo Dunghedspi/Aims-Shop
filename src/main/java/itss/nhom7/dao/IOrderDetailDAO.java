@@ -1,5 +1,6 @@
 package itss.nhom7.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -18,4 +19,6 @@ public interface IOrderDetailDAO extends JpaRepository<OrderDetail, Integer> {
 	@Query("select new itss.nhom7.model.ProductOrderQuantityCount(o.product.id,sum(o.quantity))"
 			+"from OrderDetail as o group by o.product.id")
 	List<ProductOrderQuantityCount> countTotalProductOrderQuantity();
+	
+	ArrayList<OrderDetail> findByOrderId(int id);
 }

@@ -46,6 +46,9 @@ public class Order {
 	@Column(name="created_at")
 	private Calendar createdAt;
 	
+	@Column(name="tokenUser")
+	private String tokenUser;
+	
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	private User user;

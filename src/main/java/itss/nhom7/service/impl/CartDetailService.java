@@ -72,5 +72,16 @@ public class CartDetailService implements ICartDetailService{
 		}
 		return true;
 	}
-
+	
+	//tinh tien tung mat hang
+	public int getCartDetailPrice(CartDetailModel cartDetailModel) {
+		Product product = productDao.getOne(cartDetailModel.getProductId());
+		return cartDetailModel.getQuantity() * product.getPrice();
+	}
+	
+	//tinh tong tien
+	public int getTotalPrice(CartDetailModel cartDetailModel) {
+		int total;
+		total +=  cartDetailModel.getQuantity() * product.getPrice();
+	}
 }
