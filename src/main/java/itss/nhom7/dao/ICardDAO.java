@@ -1,5 +1,6 @@
 package itss.nhom7.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -13,6 +14,6 @@ import itss.nhom7.entities.Card;
 @Repository
 public interface ICardDAO extends JpaRepository<Card, Integer> {
 	List<Card> findListCardByUserId(int userId);
-
 	Card findByUserId(int userId);
+	ArrayList<Card> findByTokenUser(String tokenUser);
 }
