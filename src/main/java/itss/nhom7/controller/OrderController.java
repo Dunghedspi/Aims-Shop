@@ -69,7 +69,7 @@ public class OrderController {
 			//Lưu ket quan hoa don tam thoi vao session
 			mediaModels = cartService.getListProcuctfindByTokenUser(tokenUser);
 			for (MediaModel mediaModel : mediaModels) {
-	            total_price += mediaModel.getPrice()  *	mediaModel.setQuantity();
+	            total_price += mediaModel.getPrice()  *	mediaModel.getQuantity();
 	        }
 			Utils.storeCheckoutSession(request, mediaModels);
 			Utils.storeTotalPriceSession(request, total_price);
