@@ -9,11 +9,7 @@ import org.springframework.stereotype.Service;
 import itss.nhom7.dao.ICardDAO;
 import itss.nhom7.dao.IUserDAO;
 import itss.nhom7.entities.Card;
-import itss.nhom7.entities.Cart;
-import itss.nhom7.entities.Product;
 import itss.nhom7.model.CardModel;
-import itss.nhom7.model.CartDetailModel;
-import itss.nhom7.model.MediaModel;
 import itss.nhom7.service.ICardService;
 
 @Service
@@ -69,23 +65,6 @@ public class CardService implements ICardService{
 		if(cardDao.getOne(idCard) !=null) {
 			cardDao.deleteById(idCard);
 		}
-	}
-	
-	public ArrayList<CardModel> getListCardfindByTokenUser(String tokenUser) {
-		ArrayList<Card> cards = cardDao.findByTokenUser(tokenUser);
-		ArrayList<CardModel> cardModels = new ArrayList<CardModel>();
-		if(cards != null) {
-			for(Card card : cards) {
-				CardModel cardModel = new CardModel();
-				cardModel.setId(card.getId());
-				cardModel.setNameBank(card.getNameBank());
-				cardModel.setNumberCard(card.getNumberCard());
-				cardModel.setUserId(card.getUser().getId());
-				cardModel.setBalance(card.getAccountBalance());
-				cardModels.add(cardModel);
-			}
-		}		
-		return cardModels;
 	}
 
 }

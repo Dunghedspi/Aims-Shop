@@ -40,11 +40,5 @@ public class Card implements Serializable{
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	private User user;
-	
-	@Column(name="tokenUser")
-	private String tokenUser;
-	
-	@Column(name="account_balance") // so du tai khoan
-	private String accountBalance;
 
 }

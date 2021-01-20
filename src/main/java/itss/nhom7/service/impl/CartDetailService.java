@@ -79,4 +79,9 @@ public class CartDetailService implements ICartDetailService{
 		return cartDetailModel.getQuantity() * product.getPrice();
 	}
 	
+	//tinh tong tien
+	public int getTotalPrice(CartDetailModel cartDetailModel) {
+		int total;
+		total +=  cartDetailModel.getQuantity() * product.getPrice();
+	}
 }
