@@ -16,4 +16,12 @@ public class Utils {
     public static CartDetail getCheckoutSession(HttpServletRequest request) {
         return (CartDetail) request.getSession().getAttribute("checkout");
     }
+    
+    public static void storeTotalPriceSession(HttpServletRequest request, int total_price) {
+        request.getSession().setAttribute("total_price", total_price );
+    }
+ 
+    public static int getTotalPriceSession(HttpServletRequest request) {
+        return (int) request.getSession().getAttribute("total_price");
+    }
 }    
